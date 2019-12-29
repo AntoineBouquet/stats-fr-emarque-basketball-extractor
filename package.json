@@ -10,5 +10,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "pdf.js-extract": "^0.1.3"
-  }
+  },
+  "keywords": ["nodejs", "javascript", "emarque", "basketball", "extractor", "stats"]
 }
