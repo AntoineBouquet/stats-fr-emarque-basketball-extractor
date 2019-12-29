@@ -1,6 +1,6 @@
-const Stats = require('../models/stats.model.js');
-const Coach = require('../models/coach.model.js');
-const Scores = require('../models/scores.model.js');
+const Stats = require('./stats.model.js');
+const Coach = require('./coach.model.js');
+const Scores = require('./scores.model.js');
 const History = require('./event.model.js');
 
 class Team {

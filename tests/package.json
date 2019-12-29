@@ -1,0 +1,14 @@
+{
+  "name": "extractor-test",
+  "version": "1.0.0",
+  "description": "Test package stats-fr-emarque-basketball-extractor",
+  "main": "extractor.js",
+  "scripts": {
+    "test": "node extractor.js"
+  },
+  "author": "Antoine Bouquet",
+  "license": "ISC",
+  "dependencies": {
+    "stats-fr-emarque-basketball-extractor": "../"
+  }
+}

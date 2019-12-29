@@ -1,10 +1,10 @@
-const Match = require('../models/match.model.js');
-const Person = require('../models/person.model.js');
-const Player = require('../models/player.model.js');
-const Team = require('../models/team.model.js');
-const Coach = require('../models/coach.model.js');
-const Event = require('../models/event.model.js');
-const EventTypes = require('../models/event-types.enum');
+const Match = require('../models/basketball/match.model.js');
+const Person = require('../models/basketball/person.model.js');
+const Player = require('../models/basketball/player.model.js');
+const Team = require('../models/basketball/team.model.js');
+const Coach = require('../models/basketball/coach.model.js');
+const Event = require('../models/basketball/event.model.js');
+const EventTypes = require('../models/basketball/event-types.enum');
 const Utils = require('../utils/utils');
 ExtractorHandler = require('./extractor-handler.service');
 
@@ -97,7 +97,8 @@ const extractHistoryScore = function(content, homeTeam = true) {
             break;
 
           default:
-            throw "Player n°" + content.str + " scores an illegal shoot (not a 1, 2 or 3 pts) --> " + points;
+            throw "Player n°" + content.str + " scores an illegal shoot (not a 1, 2 or 3 pts) --> " + points
+              + "\n content position -> x : " + content.x + " - y : " + content.y;
         }
         event.from = content.str;
         event.order = indexOrder++;

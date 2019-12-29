@@ -1,4 +1,4 @@
-const Stats = require('../models/stats.model.js');
+const Stats = require('./stats.model.js');
 const Licensee = require('./licensee.model');
 
 class Player extends Licensee {

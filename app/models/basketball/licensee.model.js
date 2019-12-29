@@ -1,5 +1,5 @@
-const Person = require('../models/person.model.js');
-const Fouls = require('../models/fouls.model.js');
+const Person = require('./person.model.js');
+const Fouls = require('./fouls.model.js');
 
 class Licensee extends Person {
   constructor() {

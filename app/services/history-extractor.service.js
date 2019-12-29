@@ -1,6 +1,6 @@
 ExtractorHanler = require('./extractor-handler.service');
-const EventType = require('../models/event-types.enum');
-const Event = require('../models/event.model');
+const EventType = require('../models/basketball/event-types.enum');
+const Event = require('../models/basketball/event.model');
 
 function HistoryExtractor() {}
 

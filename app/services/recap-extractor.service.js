@@ -1,9 +1,9 @@
-const Match = require('../models/match.model.js');
-const Team = require('../models/team.model.js');
-const Player = require('../models/player.model.js');
-const Stats = require('../models/stats.model.js');
+const Match = require('../models/basketball/match.model.js');
+const Team = require('../models/basketball/team.model.js');
+const Player = require('../models/basketball/player.model.js');
+const Stats = require('../models/basketball/stats.model.js');
 const Utils = require('../utils/utils');
-const Person = require('../models/person.model.js');
+const Person = require('../models/basketball/person.model.js');
 ExtractorHandler = require('./extractor-handler.service');
 
 const utils = new Utils();
