@@ -37,19 +37,19 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
       let matchFromRecap = null;
       let matchFromMatchSheet = null;
       let history = null;
-      let shoots = [];
+      let teamShoots = [];
 
       promises.push(recapExtractor.extract(recapSheet).then((match) => matchFromRecap = match));
       promises.push(matchSheetExtractor.extract(matchSheet).then((match) => matchFromMatchSheet = match));
       promises.push(historyExtractor.extract(historySheet).then((mHistory) => history = mHistory));
 
       if(fileChecker.checkFile(shootsSheet) === '') {
-        promises.push(shootPositionsExtractor.extract(shootsSheet).then((mShoots) => shoots = mShoots));
+        promises.push(shootPositionsExtractor.extract(shootsSheet).then((mShoots) => teamShoots = mShoots));
       }
 
       Promise.all(promises).then(() => {
         // TODO MERGE
-        data.match = matchFromRecap;
+        data.match = teamShoots;
         data.result.code = 0;
 
         resolve(data);

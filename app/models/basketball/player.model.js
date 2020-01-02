@@ -8,6 +8,8 @@ class Player extends Licensee {
     this.playedTime = null;
     this.captain = false;
     this.stats = new Stats();
+    this.shootPositions = [];
+
   }
 }
 

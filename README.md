@@ -11,13 +11,24 @@ A tool to  extract french basketball amateur matches stats from E-Marque (French
 npm install stats-fr-emarque-basketball-extractor
 ```
 
+This package use [pdf-image](https://www.npmjs.com/package/pdf-image) package, which need `convert`, `gs` and `pdfinfo` (part of poppler) commands.
+
+#### Ubuntu
+```
+sudo apt-get install imagemagick ghostscript poppler-utils
+``` 
+#### OSX (Yosemite)
+```
+brew install imagemagick ghostscript poppler 
+``` 
+
 ### How to use
 
 ```
 Extractor = require('stats-fr-emarque-basketball-extractor');
 ```
 
-##### Get all stats from match PDF files
+#### Get all stats from match PDF files
 
 ```
 Extractor.extractAll(matchFile, recapFile, historyFile, shootPositionsFile).then((result) => {
@@ -29,9 +40,9 @@ French E-Marque software provide four PDF files which could be used :
 - `matchFile` is the match sheet file path (:fr: Feuille de marque)
 - `recapFile` is the summary sheet file path (:fr: Récapitulatif)
 - `historyFile` is the history sheet file path (:fr: Historique)
-- `shootPositionsFile` is shoot positions sheet file path (:fr: Positions de tir)
+- `shootPositionsFile` extract approximate shoot positions sheet file path (:fr: Positions de tir)
 
-##### Get stats from match sheet
+#### Get stats from match sheet
 
 ```
 Extractor.extractMatchSheet(matchFile).then((match) => {
@@ -39,7 +50,7 @@ Extractor.extractMatchSheet(matchFile).then((match) => {
 });
 ```
 
-##### Get stats from summary sheet
+#### Get stats from summary sheet
 
 ```
 Extractor.extractRecap(recapFile).then((match) => {
@@ -47,7 +58,7 @@ Extractor.extractRecap(recapFile).then((match) => {
 });
 ```
 
-##### Get stats from history sheet
+#### Get stats from history sheet
 
 ```
 Extractor.extractHistory(historyFile).then((history) => {
@@ -55,7 +66,7 @@ Extractor.extractHistory(historyFile).then((history) => {
 });
 ```
 
-##### Get stats from shoot positions sheet
+#### Get stats from shoot positions sheet
 
 ```
 Extractor.extractMatchSheet(shootPositionsFile).then((positions) => {
@@ -63,10 +74,13 @@ Extractor.extractMatchSheet(shootPositionsFile).then((positions) => {
 });
 ```
 
+A temp directory (called `tmp-extractor`) is created and deleted during this method to process images of shoot positions.
+
 ## TODO for v1.0.0
 
-1. Extract data from shoot positions shoot sheet
-2. `extractAll`: Merge data from all extractions 
+- [ ] Extract data from shoot positions sheet and implements `ShootPositionsExtractor` service
+- [ ] `extractAll`: Merge data from all extractions 
+- [ ] add a part in `checkFile` method to check the truthfulness of the file
 
 ## License
 
