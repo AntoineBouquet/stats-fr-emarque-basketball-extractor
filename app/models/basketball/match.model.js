@@ -7,6 +7,7 @@ class Match {
     this.hourEnd = null;
     this.referees = [];
     this.teams = [];
+    this.history = [];
   }
 }
 

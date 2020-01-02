@@ -27,6 +27,9 @@ const extractPlayers = function(contents) {
       if(playerName.substr(playerName.length - 5, 5) === "(CAP)") {
         player.captain = true;
         player.lastnameFirstnameReduced = playerName.substring(0, playerName.length - 6);
+      } else if(playerName.substr(playerName.length - 6, 6) === "(*CAP)") {
+        player.captain = true;
+        player.lastnameFirstnameReduced = playerName.substring(0, playerName.length - 7);
       } else {
         player.lastnameFirstnameReduced = playerName;
       }
@@ -42,13 +45,13 @@ const extractPlayers = function(contents) {
   return players;
 };
 
-const extractCoach = function(content, yStr, yStrReduced, assistant = false) {
-  if(content == null || content.length === 0) {
+const extractCoach = function(contentLicence, contentName, yStr, yStrReduced, assistant = false) {
+  if(contentLicence == null || contentLicence.length === 0 || contentName === null || contentName.length === 0) {
     return null;
   }
 
   let coach = new Coach();
-  let coachStr = utils.extractDataFromXY(22, yStr, content);
+  let coachStr = utils.extractDataFromXY(22, yStr, contentLicence);
 
   if(! assistant) {
     coach.licence = coachStr.split(" ").slice(-1)[0];
@@ -57,11 +60,16 @@ const extractCoach = function(content, yStr, yStrReduced, assistant = false) {
     coach.licence = coachStr;
   }
 
-  let coachStrReduced = utils.extractDataFromXY(assistant ? 195 : 166, yStrReduced, content);
+  let coachStrReduced = utils.extractDataFromXY(assistant ? 195 : 166, yStrReduced, contentName);
   if((assistant && coachStrReduced != null) || ! assistant) {
-    coach.lastnameFirstnameReduced = coachStrReduced.substring(0,
-      (coachStrReduced.indexOf("(CAP)") !== -1 ? (coachStrReduced.indexOf("(CAP)") - 1) : (coachStrReduced.length)));
-    coach.extractFouls(content.filter(content => content.x > 300 && content.y >= yStr - 2 && content.y <= yStrReduced + 2));
+    if(coachStrReduced.indexOf("(CAP)") !== -1) {
+      coachStrReduced = coachStrReduced.substring(0, (coachStrReduced.indexOf("(CAP)") - 1));
+    } else if(coachStrReduced.indexOf("(*CAP)") !== -1) {
+      coachStrReduced = coachStrReduced.substring(0, (coachStrReduced.indexOf("(*CAP)") - 1));
+    }
+
+    coach.lastnameFirstnameReduced = coachStrReduced;
+    coach.extractFouls(contentName.filter(content => content.x > 300 && content.y >= yStr - 2 && content.y <= yStrReduced + 2));
   }
 
   return coach
@@ -180,13 +188,24 @@ SheetExtractor.prototype.extract = function(file) {
         teamAway.players.push(...extractPlayers(content.filter(content => content.x > 60 && content.x < 345 &&
           content.y >= 522 && content.y <= 607)));
 
-        teamHome.headCoach = extractCoach(content, 372, 374);
-        teamAway.headCoach = extractCoach(content, 660, 662);
+        teamHome.headCoach = extractCoach(content.filter(content => content.x < 160 && content.x > 20
+          && content.y <= 375 && content.y >= 372 && ! content.str.includes("Entr")),
+          content.filter(content => content.x < 345 && content.x > 160
+         && content.y <= 375 && content.y >= 372 && ! content.str.includes("Entr")), 372, 374);
 
-        teamHome.assistantCoach = extractCoach(
-          content.filter(content => Math.floor(content.y) === 388 && content.x < 345 && content.x > 20), 388, 388, true);
-        teamAway.assistantCoach = extractCoach(
-          content.filter(content => Math.floor(content.y) === 676 && content.x < 345 && content.x > 20), 676, 676, true);
+        teamAway.headCoach = extractCoach(content.filter(content => content.x < 160 && content.x > 20
+          && content.y <= 663 && content.y >= 660 && ! content.str.includes("Entr")),
+          content.filter(content => content.x < 345 && content.x > 160
+          && content.y <= 663 && content.y >= 660 && ! content.str.includes("Entr")), 660, 662);
+
+        teamHome.assistantCoach = extractCoach(content.filter(content => Math.floor(content.y) === 388 &&
+          content.x < 160 && content.x > 20 && ! content.str.includes("Entr")),
+          content.filter(content => Math.floor(content.y) === 388 && content.x < 345 && content.x > 160
+            && ! content.str.includes("Entr")), 388, 388, true);
+        teamAway.assistantCoach = extractCoach(content.filter(content => Math.floor(content.y) === 676 &&
+          content.x < 160 && content.x > 20 && ! content.str.includes("Entr")),
+          content.filter(content => Math.floor(content.y) === 676 && content.x < 345 && content.x > 160
+            && ! content.str.includes("Entr")), 676, 676, true);
 
         teamHome.scores.scoreFirstQuarter = utils.extractDataFromXY(110, 709, content);
         teamAway.scores.scoreFirstQuarter = utils.extractDataFromXY(150, 709, content);

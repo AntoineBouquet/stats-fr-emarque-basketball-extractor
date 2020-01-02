@@ -2,6 +2,7 @@ RecapExtractor = require('./app/services/recap-extractor.service');
 MatchSheetExtractor = require('./app/services/match-sheet-extractor.service');
 HistoryExtractor = require('./app/services/history-extractor.service');
 ShootPositionExtractor = require('./app/services/shoot-positions-extractor.service');
+MergeExtractor = require('./app/services/merge-extractor.service');
 
 FileChecker = require('./app/services/file-checker.service');
 
@@ -11,6 +12,7 @@ const recapExtractor = new RecapExtractor();
 const matchSheetExtractor = new MatchSheetExtractor();
 const historyExtractor = new HistoryExtractor();
 const shootPositionsExtractor = new ShootPositionExtractor();
+const mergeExtractor = new MergeExtractor();
 const fileChecker = new FileChecker();
 
 /***
@@ -49,8 +51,7 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
 
       Promise.all(promises).then(() => {
         // TODO MERGE
-        data.match = teamShoots;
-        data.result.code = 0;
+        let data = mergeExtractor.merge(matchFromMatchSheet, matchFromRecap, history, teamShoots);
 
         resolve(data);
       }).catch((err) => reject("An error occurred during extraction : \n\t" + err));

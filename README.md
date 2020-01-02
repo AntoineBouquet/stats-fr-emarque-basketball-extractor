@@ -96,8 +96,9 @@ Matches are in directory `tests/matchs/X`
 ## TODO for v1.0.0
 
 - [X] Extract data from shoot positions sheet and implements `ShootPositionsExtractor` service
-- [ ] `extractAll`: Merge data from all extractions 
-- [ ] add a part in `checkFile` method to check the truthfulness of the file
+- [X] `extractAll`: Merge data from all extractions 
+- [ ] add a part in `fileChecker.checkFile` method to check the truthfulness of the file
+- [ ] add checks in `mergeExtractor.merge` method to prevent for data inconsistency between files
 
 ## License
 
