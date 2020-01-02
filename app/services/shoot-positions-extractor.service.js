@@ -143,56 +143,59 @@ ShootPositionsExtractor.prototype.extract = function(file) {
         .forEach(page => {
         let pageNum = page.pageInfo.num;
         let pageContent = page.content;
+        let pageError = utils.extractDataFromXY(37, 829, pageContent);
 
-        let process = (x1, x2, x3, y1, y2, str, pagePart, homeTeamPart) => {
-          let promisesProcess = [];
-          let lastnameFirstnameReduced = str.substring(0, str.indexOf('. -') + 1);
-          let player;
+        if(pageError === null || ! pageError.includes("erreurs sont apparues")) {
+          let process = (x1, x2, x3, y1, y2, str, pagePart, homeTeamPart) => {
+            let promisesProcess = [];
+            let lastnameFirstnameReduced = str.substring(0, str.indexOf('. -') + 1);
+            let player;
 
-          player = new Player();
-          player.lastnameFirstnameReduced = lastnameFirstnameReduced;
+            player = new Player();
+            player.lastnameFirstnameReduced = lastnameFirstnameReduced;
 
 
-          let shootsCount = [];
-          shootsCount.push(utils.extractDataFromXY(x1, y1, pageContent));
-          shootsCount.push(utils.extractDataFromXY(x1, y2, pageContent));
-          shootsCount.push(utils.extractDataFromXY(x2, y1, pageContent));
-          shootsCount.push(utils.extractDataFromXY(x2, y2, pageContent));
-          shootsCount.push(utils.extractDataFromXY(x3, y1, pageContent));
+            let shootsCount = [];
+            shootsCount.push(utils.extractDataFromXY(x1, y1, pageContent));
+            shootsCount.push(utils.extractDataFromXY(x1, y2, pageContent));
+            shootsCount.push(utils.extractDataFromXY(x2, y1, pageContent));
+            shootsCount.push(utils.extractDataFromXY(x2, y2, pageContent));
+            shootsCount.push(utils.extractDataFromXY(x3, y1, pageContent));
 
-          shootsCount.forEach((shootsCountPeriod, index) => {
-            let shootPositions = new ShootPositions();
-            shootPositions.period = index + 1;
+            shootsCount.forEach((shootsCountPeriod, index) => {
+              let shootPositions = new ShootPositions();
+              shootPositions.period = index + 1;
 
-            shootPositions.shootCount = shootsCountPeriod.substring(0, shootsCountPeriod.indexOf('+'));
-            shootPositions.hmtShootCount = shootsCountPeriod.substring(shootsCountPeriod.indexOf('+') + 1,
-              shootsCountPeriod.indexOf('HMT'));
-            promisesProcess.push(extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
-              .then(() => player.shootPositions.push(shootPositions)));
-          });
+              shootPositions.shootCount = shootsCountPeriod.substring(0, shootsCountPeriod.indexOf('+'));
+              shootPositions.hmtShootCount = shootsCountPeriod.substring(shootsCountPeriod.indexOf('+') + 1,
+                shootsCountPeriod.indexOf('HMT'));
+              promisesProcess.push(extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
+                .then(() => player.shootPositions.push(shootPositions)));
+            });
 
-        return Promise.all(promisesProcess).then(() => {
-            if (homeTeamPart) {
-              homeTeam.players.push(player);
-            } else {
-              awayTeam.players.push(player);
+            return Promise.all(promisesProcess).then(() => {
+              if (homeTeamPart) {
+                homeTeam.players.push(player);
+              } else {
+                awayTeam.players.push(player);
+              }
+            });
+          };
+
+          [1, 2].forEach(part => {
+            let titlePart = utils.extractDataFromXY(12, part === 1 ? 217 : 529, pageContent);
+
+            if(titlePart !== "" && ! titlePart.includes('e-Marque') &&
+              ! (titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.')) {
+              // it's a player, get his/her shoots
+              promises.push(process(340, 446, 552, part === 1 ? 334 : 646,
+                part === 1 ? 456 : 768, titlePart, part, homeTeamPart));
+            } else if(titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.') {
+              if(! first) homeTeamPart = false;
+              if(first) first = false;
             }
           });
-        };
-
-        [1, 2].forEach(part => {
-          let titlePart = utils.extractDataFromXY(12, part === 1 ? 217 : 529, pageContent);
-
-          if(titlePart !== "" && ! titlePart.includes('e-Marque') &&
-            ! (titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.')) {
-            // it's a player, get his/her shoots
-            promises.push(process(340, 446, 552, part === 1 ? 334 : 646,
-              part === 1 ? 456 : 768, titlePart, part, homeTeamPart));
-          } else if(titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.') {
-            if(! first) homeTeamPart = false;
-            if(first) first = false;
-          }
-        });
+        }
       });
 
       return Promise.all(promises);
