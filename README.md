@@ -76,9 +76,26 @@ Extractor.extractMatchSheet(shootPositionsFile).then((positions) => {
 
 A temp directory (called `tmp-extractor`) is created and deleted during this method to process images of shoot positions.
 
+## Tests
+
+``` 
+git clone https://github.com/AntoineBouquet/stats-fr-emarque-basketball-extractor.git
+cd stats-fr-emarque-basketball-extractor/tests
+```
+
+Set `tests/extractor.js` file to use one matches's sheets and launch
+
+```
+npm run test
+```
+
+Matches are in directory `tests/matchs/X`
+
+
+
 ## TODO for v1.0.0
 
-- [ ] Extract data from shoot positions sheet and implements `ShootPositionsExtractor` service
+- [X] Extract data from shoot positions sheet and implements `ShootPositionsExtractor` service
 - [ ] `extractAll`: Merge data from all extractions 
 - [ ] add a part in `checkFile` method to check the truthfulness of the file
 
