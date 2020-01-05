@@ -23,10 +23,8 @@ const fileChecker = new FileChecker();
  * @param {string} [shootsSheet=null] - (optional) shoot sheet
  * @returns {Promise<ExtractorData>} match data from files
  */
-exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet = null) {
+exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet = '') {
   return new Promise((resolve, reject) => {
-    let data = new ExtractorData();
-
     let filesChecking = [fileChecker.checkFile(matchSheet),
       fileChecker.checkFile(recapSheet),
       fileChecker.checkFile(historySheet)];
@@ -50,7 +48,6 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
       }
 
       Promise.all(promises).then(() => {
-        // TODO MERGE
         let data = mergeExtractor.merge(matchFromMatchSheet, matchFromRecap, history, teamShoots);
 
         resolve(data);

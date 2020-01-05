@@ -49,7 +49,11 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
       const {width, height} = img1;
       const diff = new PNG({width, height});
 
-      pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.96, alpha: 0});
+      try {
+        pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.96, alpha: 0});
+      } catch(err) {
+        reject("An error occurred when make pixelmatch diff : " + err);
+      }
 
       fs.writeFileSync(diffImagePath, PNG.sync.write(diff));
 
