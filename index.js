@@ -112,7 +112,7 @@ exports.extractHistory = function(historyFile) {
  * @param {string} shootPositionsFile - the file
  * @returns {Promise<[]>} Shoot position extracting from shoot position file
  */
-exports.extractMatchSheet = function(shootPositionsFile) {
+exports.extractShootPositions = function(shootPositionsFile) {
   return new Promise((resolve, reject) => {
     let checkFile = fileChecker.checkFile(shootPositionsFile);
 
