@@ -21,9 +21,10 @@ const fileChecker = new FileChecker();
  * @param {string} recapSheet - summary sheet
  * @param {string} historySheet - history sheet
  * @param {string} [shootsSheet=null] - (optional) shoot sheet
+ * @param {boolean} slowMode - enable the slow mode (default: false)
  * @returns {Promise<ExtractorData>} match data from files
  */
-exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet = '') {
+exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet = '', slowMode = false) {
   return new Promise((resolve, reject) => {
     let filesChecking = [fileChecker.checkFile(matchSheet),
       fileChecker.checkFile(recapSheet),
@@ -44,7 +45,7 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
       promises.push(historyExtractor.extract(historySheet).then((mHistory) => history = mHistory));
 
       if(fileChecker.checkFile(shootsSheet) === '') {
-        promises.push(shootPositionsExtractor.extract(shootsSheet).then((mShoots) => teamShoots = mShoots));
+        promises.push(shootPositionsExtractor.extract(shootsSheet, slowMode).then((mShoots) => teamShoots = mShoots));
       }
 
       Promise.all(promises).then(() => {
@@ -110,16 +111,17 @@ exports.extractHistory = function(historyFile) {
 /***
  * Extract match shoot positions from file
  * @param {string} shootPositionsFile - the file
+ * @param {boolean} slowMode - enable the slow mode (default: false)
  * @returns {Promise<[]>} Shoot position extracting from shoot position file
  */
-exports.extractShootPositions = function(shootPositionsFile) {
+exports.extractShootPositions = function(shootPositionsFile, slowMode = false) {
   return new Promise((resolve, reject) => {
     let checkFile = fileChecker.checkFile(shootPositionsFile);
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
 
-    shootPositionsExtractor.extract(shootPositionsFile).then(match => resolve(match))
+    shootPositionsExtractor.extract(shootPositionsFile, slowMode).then(match => resolve(match))
       .catch(err => reject("An error occurred during extraction : \n\t" + err));
   });
 };

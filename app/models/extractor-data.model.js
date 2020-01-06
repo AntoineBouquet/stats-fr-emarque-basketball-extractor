@@ -1,5 +1,3 @@
-Match = require('./basketball/match.model');
-
 class ExtractorData {
   constructor() {
     this.match = null;

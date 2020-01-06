@@ -4,7 +4,8 @@
   "description": "Test package stats-fr-emarque-basketball-extractor",
   "main": "extractor.js",
   "scripts": {
-    "test": "node extractor.js"
+    "test": "node extractor.js",
+    "test-slow-mode": "node extractor.js --slow-mode"
   },
   "author": "Antoine Bouquet",
   "license": "ISC",

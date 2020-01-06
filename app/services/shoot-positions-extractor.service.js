@@ -7,11 +7,13 @@ const path = require('path');
 const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
 const potrace = require('potrace');
+const AsyncLock = require('async-lock');
 
 const Player = require('../models/basketball/player.model');
 const Team = require('../models/basketball/team.model');
 const ShootPosition = require('../models/basketball/shoot-position.model');
 const ShootPositions = require('../models/basketball/shoot-positions.model');
+const lock = new AsyncLock();
 
 const utils = new Utils();
 
@@ -44,11 +46,10 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
     });
 
     pdfImage.convertPage(numPage - 1).then(function (imagePath) {
-      const img1 = PNG.sync.read(fs.readFileSync('./app/resources/field-empty.png'));
+      const img1 = PNG.sync.read(fs.readFileSync(path.resolve(__dirname, '../resources/field-empty.png')));
       const img2 = PNG.sync.read(fs.readFileSync(imagePath));
       const {width, height} = img1;
       const diff = new PNG({width, height});
-
       try {
         pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.96, alpha: 0});
       } catch(err) {
@@ -91,11 +92,11 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
           resolve();
         }
       });
-    })
+    }).catch((err) => reject("An error occured when make convert page to png : " + err));
   });
 };
 
-ShootPositionsExtractor.prototype.extract = function(file) {
+ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
   return new Promise((resolve, reject) => {
     let homeTeamPart = true;
     let first = true;
@@ -132,7 +133,7 @@ ShootPositionsExtractor.prototype.extract = function(file) {
     };
 
     let rejectHandler = function(err) {
-      console.log(err);
+      console.error(err);
       deleteTmpFiles();
       reject("An error occured extracting shoot positions : " + err);
     };
@@ -155,9 +156,7 @@ ShootPositionsExtractor.prototype.extract = function(file) {
               let process = (x1, x2, x3, y1, y2, str, pagePart, homeTeamPart) => {
                 let promisesProcess = [];
                 let lastnameFirstnameReduced = str.substring(0, str.indexOf('. -') + 1);
-                let player;
-
-                player = new Player();
+                let player = new Player();
                 player.lastnameFirstnameReduced = lastnameFirstnameReduced;
 
 
@@ -175,8 +174,19 @@ ShootPositionsExtractor.prototype.extract = function(file) {
                   shootPositions.shootCount = shootsCountPeriod.substring(0, shootsCountPeriod.indexOf('+'));
                   shootPositions.hmtShootCount = shootsCountPeriod.substring(shootsCountPeriod.indexOf('+') + 1,
                     shootsCountPeriod.indexOf('HMT'));
-                  promisesProcess.push(extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
-                    .then(() => player.shootPositions.push(shootPositions)));
+
+                  if(slowMode) {
+                    promisesProcess.push(lock.acquire('shoot-position', function(done) {
+                      extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
+                        .then(() => {
+                          player.shootPositions.push(shootPositions);
+                          done();
+                        });
+                    }, {}));
+                  } else {
+                    promisesProcess.push(extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
+                      .then(() => player.shootPositions.push(shootPositions)));
+                  }
                 });
 
                 return Promise.all(promisesProcess).then(() => {

@@ -31,7 +31,7 @@ Extractor = require('stats-fr-emarque-basketball-extractor');
 #### Get all stats from match PDF files
 
 ```
-Extractor.extractAll(matchFile, recapFile, historyFile, shootPositionsFile).then((result) => {
+Extractor.extractAll(matchFile, recapFile, historyFile, shootPositionsFile, slowMode).then((result) => {
   // TODO something with result object
 });
 ```
@@ -41,6 +41,8 @@ French E-Marque software provide four PDF files which could be used :
 - `recapFile` is the summary sheet file path (:fr: Récapitulatif)
 - `historyFile` is the history sheet file path (:fr: Historique)
 - `shootPositionsFile` extract approximate shoot positions sheet file path (:fr: Positions de tir)
+
+`slowMode` is an optional boolean param. If set to true, all periods of all players will be process one by one (good for low capacity computers).
 
 #### Get stats from match sheet
 
@@ -69,12 +71,14 @@ Extractor.extractHistory(historyFile).then((history) => {
 #### Get stats from shoot positions sheet
 
 ```
-Extractor.extractMatchSheet(shootPositionsFile).then((positions) => {
+Extractor.extractMatchSheet(shootPositionsFile, slowMode).then((positions) => {
   // TODO something with positions array
 });
 ```
 
 A temp directory (called `tmp-extractor`) is created and deleted during this method to process images of shoot positions.
+
+`slowMode` is an optional boolean param. If set to true, all periods of all players will be process one by one (better for low capacity computers). 
 
 ## Tests
 

@@ -89,7 +89,7 @@ MergeExtractorService.prototype.merge = function(matchFromMatchSheet, matchFromR
       teamShoots.forEach(team => {
         match.teams.find(teamMatch => teamMatch.home === team.home).players.forEach(player => {
           player.shootPositions = team.players.find(playerFind =>
-            playerFind.shirtNumber === player.shirtNumber).shootPositions;
+            playerFind.lastnameFirstnameReduced === player.lastnameFirstnameReduced).shootPositions;
         });
       });
     }
