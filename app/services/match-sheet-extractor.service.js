@@ -171,8 +171,8 @@ SheetExtractor.prototype.extract = function(file) {
         let teamHome = new Team(true);
         let teamAway = new Team(false);
 
-        teamHome.number = utils.extractDataFromXY(107, 134, content);
-        teamAway.number = utils.extractDataFromXY(107, 422, content);
+        teamHome.number = utils.extractDataFromXY(107, 134, content.filter(content => content.x < 259 && content.y < 140));
+        teamAway.number = utils.extractDataFromXY(107, 422, content.filter(content => content.x < 259 && content.y < 140));
 
         teamHome.shirtColor = utils.extractDataFromXY(259, 135, content);
         teamAway.shirtColor = utils.extractDataFromXY(259, 422, content);
