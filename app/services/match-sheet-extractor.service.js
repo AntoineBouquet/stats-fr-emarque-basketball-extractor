@@ -35,7 +35,7 @@ const extractPlayers = function(contents) {
       }
     }
 
-    player.licence = utils.extractDataFromXY(61, Math.floor(keyY), playerContent);
+    player.licence = utils.extractDataFromXY(59, Math.floor(keyY), playerContent);
 
     player.extractFouls(playerContent.filter(content => content.x > 290));
 
@@ -171,8 +171,13 @@ SheetExtractor.prototype.extract = function(file) {
         let teamHome = new Team(true);
         let teamAway = new Team(false);
 
-        teamHome.number = utils.extractDataFromXY(107, 134, content.filter(content => content.x < 259 && content.y < 140));
-        teamAway.number = utils.extractDataFromXY(107, 422, content.filter(content => content.x < 259 && content.y < 140));
+        let contentNumero = content.filter(content => content.x > 107 && content.x < 196 && ! content.str.includes('...'));
+        teamHome.number = contentNumero.filter(content => content.y > 134 && content.y < 137)
+          .sort((contentA, contentB) => contentA.x - contentB.x)
+          .map(content => content.str).join("");
+        teamAway.number = contentNumero.filter(content => content.y > 422 && content.y < 425)
+          .sort((contentA, contentB) => contentA.x - contentB.x)
+          .map(content => content.str).join("");
 
         teamHome.shirtColor = utils.extractDataFromXY(259, 135, content);
         teamAway.shirtColor = utils.extractDataFromXY(259, 422, content);
