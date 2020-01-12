@@ -1,6 +1,7 @@
 class Match {
   constructor() {
     this.number = null;
+    this.category = null;
     this.city = null;
     this.date = null;
     this.hourBegin = null;

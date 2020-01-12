@@ -148,6 +148,7 @@ SheetExtractor.prototype.extract = function(file) {
           }
         });
 
+        match.category = utils.extractDataFromXY(50, 92, content);
         match.number = utils.extractDataFromXY(209, 83, content);
         match.date = utils.extractDataFromXY(271, 83, content);
         match.hourBegin = utils.extractDataFromXY(356, 83, content);
