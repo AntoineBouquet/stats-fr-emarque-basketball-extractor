@@ -1,6 +1,6 @@
 {
   "name": "stats-fr-emarque-basketball-extractor",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "A tool to extract french basketball amateur matches stats from E-Marque (FFBB software)",
   "main": "index.js",
   "scripts": {
