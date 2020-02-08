@@ -20,7 +20,8 @@ const extractPlayers = function(contents) {
 
     player.shirtNumber = utils.extractDataFromXY(60, Math.floor(keyY), playerContent);
     player.lastnameFirstname = utils.extractDataFromXY(84, Math.floor(keyY), playerContent);
-    player.playedTime  = utils.extractDataFromXY(300, Math.floor(keyY), playerContent);
+    player.playedTime  = utils.extractDataFromXY(300, Math.floor(keyY),
+      playerContent.filter(content => content.x < 330));
     player.stats = extractStats(Math.floor(keyY), playerContent);
 
     players.push(player);
