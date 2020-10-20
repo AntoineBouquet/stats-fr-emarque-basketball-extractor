@@ -80,7 +80,9 @@ HistoryExtractor.prototype.extract = function(file) {
             let currentRowY = beginRowY;
             let currentEvent = null;
 
-            page.content.filter(content => content.y >= beginRowY && content.y <= 788 && content.x > 0)
+            let endRowY = page.pageInfo.num === 1 ? 788 : 800;
+
+            page.content.filter(content => content.y >= beginRowY && content.y <= endRowY && content.x > 0)
               .forEach((content, index) => {
                 if(content.x < beginRowX + 5 && currentRowY !== content.y) {
                   currentRowY = content.y;
