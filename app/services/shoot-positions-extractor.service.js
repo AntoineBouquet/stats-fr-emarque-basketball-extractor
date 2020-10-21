@@ -68,7 +68,7 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
 
           svgCrosses.forEach(svgCross => {
             let position = new ShootPosition();
-            position.x = svgCross.substring(0, svgCross.indexOf(' ') - 1);
+            position.x = svgCross.substring(0, svgCross.indexOf(' '));
             position.y = svgCross.substring(svgCross.indexOf(' ') + 1, svgCross.indexOf('C') - 2);
             position.refWidth = width;
             position.refHeight = height;
@@ -158,7 +158,6 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
                 let lastnameFirstnameReduced = str.substring(0, str.indexOf('. -') + 1);
                 let player = new Player();
                 player.lastnameFirstnameReduced = lastnameFirstnameReduced;
-
 
                 let shootsCount = [];
                 shootsCount.push(utils.extractDataFromXY(x1, y1, pageContent));
