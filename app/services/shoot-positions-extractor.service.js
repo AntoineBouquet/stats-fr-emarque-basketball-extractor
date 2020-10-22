@@ -69,7 +69,7 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
           svgCrosses.forEach(svgCross => {
             let position = new ShootPosition();
             position.x = svgCross.substring(0, svgCross.indexOf(' '));
-            position.y = svgCross.substring(svgCross.indexOf(' ') + 1, svgCross.indexOf('C') - 2);
+            position.y = svgCross.substring(svgCross.indexOf(' ') + 1, svgCross.indexOf('C') - 1);
             position.refWidth = width;
             position.refHeight = height;
             position.weight = svgCross.length;
@@ -77,16 +77,39 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
             shootPositions.positions.push(position);
           });
 
-          if(shootPositions.positions != null && parseInt(shootPositions.shootCount) > shootPositions.positions.length) {
-            let gap = parseInt(shootPositions.shootCount) - shootPositions.positions.length;
+          if(shootPositions.positions != null) {
+            if(parseInt(shootPositions.shootCount) > shootPositions.positions.length) {
+              let gap = parseInt(shootPositions.shootCount) - shootPositions.positions.length;
 
-            for (let i = 0 ; i < gap ; i++) {
-              let maxWeightShoot = shootPositions.positions.reduce(function(prev, current) {
-                return (prev.weight > current.weight) ? prev : current
-              });
+              for (let i = 0 ; i < gap ; i++) {
+                let maxWeightShoot = shootPositions.positions.reduce(function(prev, current) {
+                  return (prev.weight > current.weight) ? prev : current
+                });
 
-              maxWeightShoot.weight = maxWeightShoot.weight / 2;
-              shootPositions.positions.push(maxWeightShoot);
+                maxWeightShoot.weight = maxWeightShoot.weight / 2;
+                shootPositions.positions.push(maxWeightShoot);
+              }
+            } else if(parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
+              // il y a trop de points récupérés, on enlève les points les plus proches jusqu'à atteindre
+              // le nombre attendu
+              while(parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
+                let min = -1;
+                let indexToDelete = 0;
+                shootPositions.positions.forEach((shootPosition1, index) => {
+                  shootPositions.positions.forEach((shootPosition2, index2) => {
+                    if(index !== index2) {
+                      let diff = Math.abs(shootPosition1.x - shootPosition2.x) +
+                        Math.abs(shootPosition1.y - shootPosition2.y);
+                      if (min === -1 || diff < min) {
+                        min = diff;
+                        indexToDelete = index;
+                      }
+                    }
+                  })
+                })
+
+                shootPositions.positions.splice(indexToDelete, 1)
+              }
             }
           }
           resolve();
