@@ -44,11 +44,13 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
       promises.push(matchSheetExtractor.extract(matchSheet).then((match) => matchFromMatchSheet = match));
       promises.push(historyExtractor.extract(historySheet).then((mHistory) => history = mHistory));
 
-      if(fileChecker.checkFile(shootsSheet) === '') {
-        promises.push(shootPositionsExtractor.extract(shootsSheet, slowMode).then((mShoots) => teamShoots = mShoots));
-      }
-
       Promise.all(promises).then(() => {
+        if(fileChecker.checkFile(shootsSheet) === '') {
+          return shootPositionsExtractor.extract(shootsSheet, matchFromRecap, slowMode).then((mShoots) => teamShoots = mShoots);
+        } else {
+          return Promise.resolve();
+        }
+      }).then(() => {
         let data = mergeExtractor.merge(matchFromMatchSheet, matchFromRecap, history, teamShoots);
 
         resolve(data);

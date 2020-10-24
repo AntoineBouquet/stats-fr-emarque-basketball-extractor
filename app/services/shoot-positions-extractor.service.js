@@ -84,18 +84,7 @@ const extractShootPos = function (file, numPage, shootPositions, part, tmpFolder
           });
 
           if (shootPositions.positions != null) {
-            if (parseInt(shootPositions.shootCount) > shootPositions.positions.length) {
-              let gap = parseInt(shootPositions.shootCount) - shootPositions.positions.length;
-
-              for (let i = 0; i < gap; i++) {
-                let maxWeightShoot = shootPositions.positions.reduce(function (prev, current) {
-                  return (prev.weight > current.weight) ? prev : current
-                });
-
-                maxWeightShoot.weight = maxWeightShoot.weight / 2;
-                shootPositions.positions.push(maxWeightShoot);
-              }
-            } else if (parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
+            if (parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
               // il y a trop de points récupérés, on enlève les points les plus proches jusqu'à atteindre
               // le nombre attendu
               while (parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
@@ -125,7 +114,7 @@ const extractShootPos = function (file, numPage, shootPositions, part, tmpFolder
   });
 };
 
-const calculateZone = function (position) {
+const calculateZone = (position) => {
   if (position.x && position.refWidth && position.y && position.refHeight) {
     let ratioX = position.x / position.refWidth;
     // refWidth to let y pos same reference to y
@@ -182,7 +171,57 @@ const calculateZone = function (position) {
   }
 }
 
-ShootPositionsExtractor.prototype.extract = function (file, slowMode) {
+const addMissedPositions = (shootPositions, stats) => {
+  shootPositions.forEach(shootPosition => {
+    if (parseInt(shootPosition.shootCount) > shootPosition.positions.length) {
+      let addWeightier = (shootPositionsPart, gap) => {
+        let newShootsPositions = [];
+
+        if (shootPositionsPart && shootPositionsPart.length > 0 && gap > 0) {
+          for (let i = 0; i < gap; i++) {
+            let maxWeightShoot = shootPositionsPart.reduce(function (prev, current) {
+              return (prev.weight > current.weight) ? prev : current
+            });
+
+            maxWeightShoot.weight = maxWeightShoot.weight / 2;
+            newShootsPositions.push(maxWeightShoot);
+          }
+        }
+
+        return newShootsPositions;
+      };
+
+      const allPositions = shootPositions.map(sp => sp.positions)
+        .reduce((a, b) => a.concat(b));
+
+      let shootPositionsTwoPointsInt = allPositions
+        .filter(position => position.zone === ShootZones.TWO_PTS_INT_LONG ||
+          position.zone === ShootZones.TWO_PTS_INT_SHORT);
+      let gap2Int = stats.twoPointsIntMade - shootPositionsTwoPointsInt.length;
+      shootPosition.positions.push(...addWeightier(shootPositionsTwoPointsInt, gap2Int));
+
+      let shootPositionsTwoPointsExt = allPositions
+        .filter(position => position.zone === ShootZones.TWO_PTS_EXT_90_DG ||
+          position.zone === ShootZones.TWO_PTS_EXT_45_DG_RIGHT ||
+          position.zone === ShootZones.TWO_PTS_EXT_0_DG_RIGHT ||
+          position.zone === ShootZones.TWO_PTS_EXT_45_DG_LEFT ||
+          position.zone === ShootZones.TWO_PTS_EXT_0_DG_LEFT);
+      let gap2Ext = stats.twoPointsExtMade - shootPositionsTwoPointsExt.length;
+      shootPosition.positions.push(...addWeightier(shootPositionsTwoPointsExt, gap2Ext));
+
+      let shootPositionsThreePoints = allPositions
+        .filter(position => position.zone === ShootZones.THREE_PTS_90_DG ||
+          position.zone === ShootZones.THREE_PTS_45_DG_RIGHT ||
+          position.zone === ShootZones.THREE_PTS_0_DG_RIGHT ||
+          position.zone === ShootZones.THREE_PTS_45_DG_LEFT ||
+          position.zone === ShootZones.THREE_PTS_0_DG_LEFT);
+      let gap3 = stats.threePointsMade - shootPositionsThreePoints.length;
+      shootPosition.positions.push(...addWeightier(shootPositionsThreePoints, gap3));
+    }
+  });
+}
+
+ShootPositionsExtractor.prototype.extract = function (file, recap, slowMode) {
   return new Promise((resolve, reject) => {
     let homeTeamPart = true;
     let first = true;
@@ -276,6 +315,14 @@ ShootPositionsExtractor.prototype.extract = function (file, slowMode) {
                 });
 
                 return Promise.all(promisesProcess).then(() => {
+                  let playerStats = (homeTeamPart ? recap.teams[0] : recap.teams[1])
+                    .players.find(p => p.lastnameFirstname
+                      .includes(player.lastnameFirstnameReduced
+                        .substr(0, player.lastnameFirstnameReduced.length - 1)))
+                    .stats;
+
+                  addMissedPositions(player.shootPositions, playerStats);
+
                   if (homeTeamPart) {
                     homeTeam.players.push(player);
                   } else {
