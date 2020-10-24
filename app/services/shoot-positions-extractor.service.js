@@ -15,11 +15,15 @@ const ShootPosition = require('../models/basketball/shoot-position.model');
 const ShootPositions = require('../models/basketball/shoot-positions.model');
 const lock = new AsyncLock();
 
+const ShootZones = require('../models/basketball/shoot-zones.enum');
+
+
 const utils = new Utils();
 
-function ShootPositionsExtractor() {}
+function ShootPositionsExtractor() {
+}
 
-const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder) {
+const extractShootPos = function (file, numPage, shootPositions, part, tmpFolder) {
   return new Promise((resolve, reject) => {
     let randomName = numPage + '-' + shootPositions.period + '-' + part + '-' + uuidv4();
     let diffImagePath = tmpFolder + "/" + randomName + '-diff.png';
@@ -41,7 +45,7 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
       outputDirectory: tmpFolder,
       pdfFileBaseName: randomName,
       convertOptions: {
-        "-crop" : cropParts[(shootPositions.period + ((part - 1) * 5)) - 1]
+        "-crop": cropParts[(shootPositions.period + ((part - 1) * 5)) - 1]
       }
     });
 
@@ -52,19 +56,19 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
       const diff = new PNG({width, height});
       try {
         pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.96, alpha: 0});
-      } catch(err) {
+      } catch (err) {
         reject("An error occurred when make pixelmatch diff : " + err);
       }
 
       fs.writeFileSync(diffImagePath, PNG.sync.write(diff));
 
-      potrace.trace(diffImagePath, function(err, svg) {
+      potrace.trace(diffImagePath, function (err, svg) {
         if (err) {
           reject("An error occurred when make potrace trace : " + err);
         } else {
           let svgCrosses = svg.substring(svg.indexOf("path d=") + 8, svg.indexOf("stroke") - 2)
             .split("M").map(cross => cross.trim());
-          svgCrosses.splice(0,1);
+          svgCrosses.splice(0, 1);
 
           svgCrosses.forEach(svgCross => {
             let position = new ShootPosition();
@@ -74,30 +78,32 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
             position.refHeight = height;
             position.weight = svgCross.length;
 
+            position.zone = calculateZone(position);
+
             shootPositions.positions.push(position);
           });
 
-          if(shootPositions.positions != null) {
-            if(parseInt(shootPositions.shootCount) > shootPositions.positions.length) {
+          if (shootPositions.positions != null) {
+            if (parseInt(shootPositions.shootCount) > shootPositions.positions.length) {
               let gap = parseInt(shootPositions.shootCount) - shootPositions.positions.length;
 
-              for (let i = 0 ; i < gap ; i++) {
-                let maxWeightShoot = shootPositions.positions.reduce(function(prev, current) {
+              for (let i = 0; i < gap; i++) {
+                let maxWeightShoot = shootPositions.positions.reduce(function (prev, current) {
                   return (prev.weight > current.weight) ? prev : current
                 });
 
                 maxWeightShoot.weight = maxWeightShoot.weight / 2;
                 shootPositions.positions.push(maxWeightShoot);
               }
-            } else if(parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
+            } else if (parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
               // il y a trop de points récupérés, on enlève les points les plus proches jusqu'à atteindre
               // le nombre attendu
-              while(parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
+              while (parseInt(shootPositions.shootCount) < shootPositions.positions.length) {
                 let min = -1;
                 let indexToDelete = 0;
                 shootPositions.positions.forEach((shootPosition1, index) => {
                   shootPositions.positions.forEach((shootPosition2, index2) => {
-                    if(index !== index2) {
+                    if (index !== index2) {
                       let diff = Math.abs(shootPosition1.x - shootPosition2.x) +
                         Math.abs(shootPosition1.y - shootPosition2.y);
                       if (min === -1 || diff < min) {
@@ -119,7 +125,64 @@ const extractShootPos = function(file, numPage, shootPositions, part, tmpFolder)
   });
 };
 
-ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
+const calculateZone = function (position) {
+  if (position.x && position.refWidth && position.y && position.refHeight) {
+    let ratioX = position.x / position.refWidth;
+    // refWidth to let y pos same reference to y
+    let ratioY = position.y / position.refWidth;
+
+    let hoopPos = {x: 0.5, y: 0.11};
+    let hoopZoneRadius = 0.084;
+    let freeThrowLinePos = {x: 0.5, y: 0.394};
+    let freeThrowCircleRadius = 0.121;
+    let threePointsRadius = 0.452;
+
+    if (ratioY < 0.195) {
+      // 0 degres shoots
+      if (ratioX < 0.063) {
+        return ShootZones.THREE_PTS_0_DG_LEFT;
+      } else if (ratioX >= 0.063 && ratioX < 0.336) {
+        return ShootZones.TWO_PTS_EXT_0_DG_LEFT;
+      } else if (ratioX > 0.671 && ratioX <= 0.95) {
+        return ShootZones.TWO_PTS_EXT_0_DG_RIGHT;
+      } else if (ratioX > 0.95) {
+        return ShootZones.THREE_PTS_0_DG_RIGHT;
+      } else if (Math.sqrt(Math.pow(Math.abs(ratioX - hoopPos.x), 2) +
+        Math.pow(Math.abs(ratioY - hoopPos.y), 2)) <= hoopZoneRadius) {
+        return ShootZones.TWO_PTS_INT_SHORT;
+      } else {
+        return ShootZones.TWO_PTS_INT_LONG;
+      }
+    } else if (Math.sqrt(Math.pow(Math.abs(ratioX - hoopPos.x), 2) +
+      Math.pow(Math.abs(ratioY - hoopPos.y), 2)) <= threePointsRadius) {
+      // 2 points zones
+      if (ratioX < 0.336) {
+        return ShootZones.TWO_PTS_EXT_45_DG_LEFT;
+      } else if (ratioX > 0.671) {
+        return ShootZones.TWO_PTS_EXT_45_DG_RIGHT;
+      } else if (ratioY < 0.394 ||
+        (Math.sqrt(Math.pow(Math.abs(ratioX - freeThrowLinePos.x), 2) +
+          Math.pow(Math.abs(ratioY - freeThrowLinePos.y), 2)) <= freeThrowCircleRadius)) {
+        return ShootZones.TWO_PTS_INT_LONG;
+      } else {
+        return ShootZones.TWO_PTS_EXT_90_DG;
+      }
+    } else {
+      // 3 points zones
+      if (ratioX < 0.336) {
+        return ShootZones.THREE_PTS_45_DG_LEFT;
+      } else if (ratioX > 0.671) {
+        return ShootZones.THREE_PTS_45_DG_RIGHT;
+      } else {
+        return ShootZones.THREE_PTS_90_DG;
+      }
+    }
+  } else {
+    return null;
+  }
+}
+
+ShootPositionsExtractor.prototype.extract = function (file, slowMode) {
   return new Promise((resolve, reject) => {
     let homeTeamPart = true;
     let first = true;
@@ -133,7 +196,7 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
     let tmpFolder = './tmp-extractor';
     let tmpExist = fs.existsSync(tmpFolder);
 
-    if (! tmpExist){
+    if (!tmpExist) {
       fs.mkdirSync(tmpFolder);
     }
 
@@ -142,26 +205,27 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
         for (const file of files) {
           try {
             fs.unlinkSync(path.join(tmpFolder, file));
-          } catch {}
+          } catch {
+          }
         }
 
         try {
-          if(! tmpExist) {
+          if (!tmpExist) {
             fs.rmdirSync(tmpFolder);
           }
-        } catch(err) {
+        } catch (err) {
           console.error(err);
         }
       });
     };
 
-    let rejectHandler = function(err) {
+    let rejectHandler = function (err) {
       console.error(err);
       deleteTmpFiles();
       reject("An error occured extracting shoot positions : " + err);
     };
 
-    let resolveHandler = function(data) {
+    let resolveHandler = function (data) {
       deleteTmpFiles();
       resolve(data);
     };
@@ -175,7 +239,7 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
             let pageContent = page.content;
             let pageError = utils.extractDataFromXY(37, 829, pageContent);
 
-            if(!_break && pageError === null || ! pageError.includes("erreurs sont apparues")) {
+            if (!_break && pageError === null || !pageError.includes("erreurs sont apparues")) {
               let process = (x1, x2, x3, y1, y2, str, pagePart, homeTeamPart) => {
                 let promisesProcess = [];
                 let lastnameFirstnameReduced = str.substring(0, str.indexOf('. -') + 1);
@@ -197,8 +261,8 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
                   shootPositions.hmtShootCount = shootsCountPeriod.substring(shootsCountPeriod.indexOf('+') + 1,
                     shootsCountPeriod.indexOf('HMT'));
 
-                  if(slowMode) {
-                    promisesProcess.push(lock.acquire('shoot-position', function(done) {
+                  if (slowMode) {
+                    promisesProcess.push(lock.acquire('shoot-position', function (done) {
                       extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
                         .then(() => {
                           player.shootPositions.push(shootPositions);
@@ -223,17 +287,17 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
               [1, 2].forEach(part => {
                 let titlePart = utils.extractDataFromXY(12, part === 1 ? 217 : 529, pageContent);
 
-                if(titlePart !== "" && ! titlePart.includes('e-Marque') &&
-                  ! (titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.')) {
+                if (titlePart !== "" && !titlePart.includes('e-Marque') &&
+                  !(titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.')) {
                   // it's a player, get his/her shoots
                   promises.push(process(340, 446, 552, part === 1 ? 334 : 646,
                     part === 1 ? 456 : 768, titlePart, part, homeTeamPart));
-                } else if(titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.') {
-                  if(! first) homeTeamPart = false;
-                  if(first) first = false;
+                } else if (titlePart.substr(0, 7) === 'EQUIPE ' && titlePart.charAt(9) !== '.') {
+                  if (!first) homeTeamPart = false;
+                  if (first) first = false;
                 }
               });
-            } else if(!_break) {
+            } else if (!_break) {
               resolve(false);
               _break = true;
             }
@@ -242,7 +306,7 @@ ShootPositionsExtractor.prototype.extract = function(file, slowMode) {
         Promise.all(promises).then(() => resolve(true));
       });
 
-    }).then((result) => ! result ? resolveHandler(null) : resolveHandler([homeTeam, awayTeam])).catch((err) => rejectHandler(err));
+    }).then((result) => !result ? resolveHandler(null) : resolveHandler([homeTeam, awayTeam])).catch((err) => rejectHandler(err));
   });
 };
 

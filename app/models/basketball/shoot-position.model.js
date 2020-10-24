@@ -5,6 +5,7 @@ class ShootPosition {
     this.refWidth = null;
     this.refHeight = null;
     this.weight = null;
+    this.zone = null;
   }
 }
 
