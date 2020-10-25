@@ -215,7 +215,10 @@ const addMissedPositions = (shootPositions, stats) => {
           position.zone === ShootZones.THREE_PTS_0_DG_RIGHT ||
           position.zone === ShootZones.THREE_PTS_45_DG_LEFT ||
           position.zone === ShootZones.THREE_PTS_0_DG_LEFT);
-      let gap3 = stats.threePointsMade - shootPositionsThreePoints.length;
+      // substract shoot out of semi-court
+      let gap3 = stats.threePointsMade -
+        shootPositions.map(shootPosition => shootPosition.hmtShootCount).reduce((a, b) => parseInt(a) + parseInt(b))
+        - shootPositionsThreePoints.length;
       shootPosition.positions.push(...addWeightier(shootPositionsThreePoints, gap3));
     }
   });
