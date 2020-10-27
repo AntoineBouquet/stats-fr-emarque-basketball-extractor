@@ -11,6 +11,7 @@ ShootZones = {
   "TWO_PTS_EXT_90_DG": 9,
   "TWO_PTS_INT_SHORT": 10,
   "TWO_PTS_INT_LONG": 11,
+  "THREE_PTS_LONG": 12
 };
 
 Object.freeze(ShootZones);

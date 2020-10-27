@@ -126,6 +126,11 @@ const calculateZone = (position) => {
     let freeThrowCircleRadius = 0.121;
     let threePointsRadius = 0.452;
 
+    if(ratioY > 0.684) {
+      // long shoot distance
+      return ShootZones.THREE_PTS_LONG;
+    }
+
     if (ratioY < 0.195) {
       // 0 degres shoots
       if (ratioX < 0.063) {
