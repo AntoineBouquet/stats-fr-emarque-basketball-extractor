@@ -19,7 +19,7 @@ const processEvent = (event) => {
 
   let message = event.message;
   if(event.canceled) {
-    message = message.substring(message.indexOf("Remplacé par :"), message.length - 1);
+    message = message.substring(message.indexOf("Remplacé par :") + 17, message.length - 1).trim();
   }
 
   if(message.includes("Début du match")) {

@@ -21,6 +21,6 @@ const Extractor = require('stats-fr-emarque-basketball-extractor');
 let slowMode = process.argv[2] === '--slow-mode';
 
 Extractor.extractAll(matchSheet, recap, historySheet, shootPositionsSheet, slowMode).then((data) => {
-  console.log(util.inspect(data.match, false, null, true));
+  console.log(util.inspect(data.match, {maxArrayLength: null, colors: true}));
 });
 
