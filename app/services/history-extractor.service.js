@@ -18,8 +18,11 @@ const processEvent = (event) => {
   }
 
   let message = event.message;
-  if(event.canceled) {
+  if(event.canceled && message.indexOf("Remplacé par") > -1) {
     message = message.substring(message.indexOf("Remplacé par :") + 17, message.length).trim();
+  } else {
+    event.eventType = EventType.UNSUPPORTED_TYPE;
+    return event;
   }
 
   if(message.includes("Début du match")) {
