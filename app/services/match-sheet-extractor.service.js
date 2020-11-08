@@ -20,7 +20,10 @@ const extractPlayers = function(contents) {
     let playerContent = contentsGroupByY[keyY];
     let player = new Player();
 
-    player.shirtNumber = utils.extractDataFromXY(266, Math.floor(keyY), playerContent);
+    player.shirtNumber = utils.extractDataFromXY(268, Math.floor(keyY), playerContent);
+    if(player.shirtNumber == null || isNaN(player.shirtNumber)) {
+      player.shirtNumber = utils.extractDataFromXY(266, Math.floor(keyY), playerContent);
+    }
     let playerName = utils.extractDataFromXY(122, Math.floor(keyY), playerContent);
 
     if(playerName) {
@@ -192,7 +195,7 @@ SheetExtractor.prototype.extract = function(file) {
         teamHome.players.push(...extractPlayers(content.filter(content => content.x > 60 && content.x < 345 &&
           content.y >= 235 && content.y <= 361)));
         teamAway.players.push(...extractPlayers(content.filter(content => content.x > 60 && content.x < 345 &&
-          content.y >= 522 && content.y <= 607)));
+          content.y >= 522 && content.y <= 650)));
 
         teamHome.headCoach = extractCoach(content.filter(content => content.x < 160 && content.x > 20
           && content.y <= 375 && content.y >= 372 && ! content.str.includes("Entr")),
