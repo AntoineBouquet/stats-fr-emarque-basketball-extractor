@@ -38,7 +38,7 @@ const extractPlayers = function(contents) {
       }
     }
 
-    player.licence = utils.extractDataFromXY(59, Math.floor(keyY), playerContent);
+    player.licence = utils.extractDataFromXY(61, Math.floor(keyY), playerContent);
 
     player.extractFouls(playerContent.filter(content => content.x > 290));
 
