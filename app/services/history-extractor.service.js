@@ -20,7 +20,7 @@ const processEvent = (event) => {
   let message = event.message;
   if(event.canceled && message.indexOf("Remplacé par") > -1) {
     message = message.substring(message.indexOf("Remplacé par :") + 17, message.length).trim();
-  } else {
+  } else if (event.canceled) {
     event.eventType = EventType.UNSUPPORTED_TYPE;
     return event;
   }
