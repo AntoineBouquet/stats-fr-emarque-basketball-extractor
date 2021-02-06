@@ -65,8 +65,8 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
  * @returns {Promise<Match>} Match extracting from match sheet file
  */
 exports.extractMatchSheet = function(matchSheetFile) {
-  return new Promise((resolve, reject) => {
-    let checkFile = fileChecker.checkFile(matchSheetFile);
+  return new Promise(async (resolve, reject) => {
+    let checkFile = await fileChecker.checkFile(matchSheetFile);
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -82,8 +82,8 @@ exports.extractMatchSheet = function(matchSheetFile) {
  * @returns {Promise<Match>} Match extracting from recap file
  */
 exports.extractRecap = function(recapFile) {
-  return new Promise((resolve, reject) => {
-    let checkFile = fileChecker.checkFile(recapFile);
+  return new Promise(async (resolve, reject) => {
+    let checkFile = await fileChecker.checkFile(recapFile);
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -99,8 +99,8 @@ exports.extractRecap = function(recapFile) {
  * @returns {Promise<Event[]>} Match history extracting from history file
  */
 exports.extractHistory = function(historyFile) {
-  return new Promise((resolve, reject) => {
-    let checkFile = fileChecker.checkFile(historyFile);
+  return new Promise(async (resolve, reject) => {
+    let checkFile = await fileChecker.checkFile(historyFile);
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -117,8 +117,8 @@ exports.extractHistory = function(historyFile) {
  * @returns {Promise<[]>} Shoot position extracting from shoot position file
  */
 exports.extractShootPositions = function(shootPositionsFile, slowMode = false) {
-  return new Promise((resolve, reject) => {
-    let checkFile = fileChecker.checkFile(shootPositionsFile);
+  return new Promise(async (resolve, reject) => {
+    let checkFile = await fileChecker.checkFile(shootPositionsFile);
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -127,3 +127,28 @@ exports.extractShootPositions = function(shootPositionsFile, slowMode = false) {
       .catch(err => reject("An error occurred during extraction : \n\t" + err));
   });
 };
+
+/***
+ * Check file is one of 4 files
+ * @param {string} file path to check
+ * @returns {Promise<string>} MATCH_SHEET, RECAP, HISTORY, SHOOT_POSITIONS or null
+ */
+exports.checkFile = async function(file) {
+  let checkFile = await fileChecker.checkFile(file);
+
+  if(checkFile !== '') {
+    return Promise.reject("File is not acceptable: " + checkFile);
+  }
+
+  if(await recapExtractor.isRecap(file)) {
+    return Promise.resolve('RECAP');
+  } else if(await matchSheetExtractor.isMatchSheet(file)) {
+    return Promise.resolve('MATCH_SHEET');
+  } else if(await shootPositionsExtractor.isShootPositions(file)) {
+    return Promise.resolve('SHOOT_POSITIONS');
+  } else if(await historyExtractor.isHistory(file)) {
+    return Promise.resolve('HISTORY');
+  } else {
+    return Promise.resolve(null);
+  }
+}

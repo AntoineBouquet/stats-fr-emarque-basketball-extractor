@@ -4,7 +4,7 @@ const Player = require('../models/basketball/player.model.js');
 const Stats = require('../models/basketball/stats.model.js');
 const Utils = require('../utils/utils');
 const Person = require('../models/basketball/person.model.js');
-ExtractorHandler = require('./extractor-handler.service');
+const ExtractorHandler = require('./extractor-handler.service');
 
 const utils = new Utils();
 
@@ -115,6 +115,17 @@ RecapExtractor.prototype.extract = function(file) {
 
       resolve(match);
     }).catch((err) => reject(err)));
+};
+
+RecapExtractor.prototype.isRecap = function(file) {
+  const handler = new ExtractorHandler();
+
+  return handler.extractHandler(file).then((data) =>  {
+    if(data.pages.length !== 2) return false;
+
+    return data.pages.map((page) => page.content.map((content => content.str))[page.content.length - 1])
+      .every(value => value.indexOf("RECAPITULATIF") > -1);
+  });
 };
 
 module.exports = RecapExtractor;

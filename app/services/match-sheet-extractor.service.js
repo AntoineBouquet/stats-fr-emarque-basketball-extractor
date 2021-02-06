@@ -6,7 +6,7 @@ const Coach = require('../models/basketball/coach.model.js');
 const Event = require('../models/basketball/event.model.js');
 const EventTypes = require('../models/basketball/event-types.enum');
 const Utils = require('../utils/utils');
-ExtractorHandler = require('./extractor-handler.service');
+const ExtractorHandler = require('./extractor-handler.service');
 
 const utils = new Utils();
 
@@ -244,6 +244,22 @@ SheetExtractor.prototype.extract = function(file) {
 
       resolve(match);
     }).catch((err) => reject(err)));
+};
+
+SheetExtractor.prototype.isMatchSheet = function(file) {
+  const handler = new ExtractorHandler();
+
+  return handler.extractHandler(file).then((data) =>  {
+    if(data.pages.length !== 2) return false;
+
+    if(data.pages[0].content.map((content => content.str))[data.pages[0].content.length - 1].indexOf("e-Marque") === -1)
+      return false;
+
+    if(data.pages[1].content.map((content => content.str))[data.pages[1].content.length - 1].indexOf("* Rayer la (les) mention (s) inutile (s)") === -1)
+      return false;
+
+    return true;
+  });
 };
 
 module.exports = SheetExtractor;

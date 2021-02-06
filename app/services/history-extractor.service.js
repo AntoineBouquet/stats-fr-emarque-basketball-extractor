@@ -1,4 +1,4 @@
-ExtractorHanler = require('./extractor-handler.service');
+const ExtractorHandler = require('./extractor-handler.service');
 const EventType = require('../models/basketball/event-types.enum');
 const Event = require('../models/basketball/event.model');
 
@@ -77,7 +77,7 @@ const processEvent = (event) => {
 HistoryExtractor.prototype.extract = function(file) {
   let history = [];
 
-  const handler = new ExtractorHanler();
+  const handler = new ExtractorHandler();
   return new Promise((resolve, reject) =>
     handler.extractHandler(file).then((data) => {
       if(data != null && data.pages != null) {
@@ -125,6 +125,17 @@ HistoryExtractor.prototype.extract = function(file) {
 
       resolve(history);
     }).catch((err) => reject(err)));
+};
+
+HistoryExtractor.prototype.isHistory = function(file) {
+  const handler = new ExtractorHandler();
+
+  return handler.extractHandler(file).then((data) =>  {
+    if(data.pages.length < 2) return false;
+
+    return data.pages.map((page) => page.content.map(content => content.str))
+      .every(contentPage => contentPage.indexOf("HISTORIQUE") > -1);
+  });
 };
 
 module.exports = HistoryExtractor;

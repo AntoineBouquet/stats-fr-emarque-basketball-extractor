@@ -76,6 +76,14 @@ Extractor.extractMatchSheet(shootPositionsFile, slowMode).then((positions) => {
 });
 ```
 
+#### Get file type
+
+```
+Extractor.checkFile(file).then((result) => {
+  // MATCH_SHEET, RECAP, HISTORY, SHOOT_POSITIONS or null depending the file type
+});
+```
+
 A temp directory (called `tmp-extractor`) is created and deleted during this method to process images of shoot positions.
 
 `slowMode` is an optional boolean param. If set to true, all periods of all players will be process one by one (better for low capacity computers). 
@@ -101,7 +109,7 @@ Matches are in directory `tests/matchs/X`
 
 - [X] Extract data from shoot positions sheet and implements `ShootPositionsExtractor` service
 - [X] `extractAll`: Merge data from all extractions 
-- [ ] add a part in `fileChecker.checkFile` method to check the truthfulness of the file
+- [X] add a file check API method to check the truthfulness and the type of the file
 - [ ] add checks in `mergeExtractor.merge` method to prevent for data inconsistency between files
 
 ## License

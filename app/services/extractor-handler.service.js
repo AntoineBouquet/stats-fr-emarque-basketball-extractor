@@ -3,6 +3,11 @@ const pdfExtract = new PDFExtract();
 
 function ExtractorHandler() {}
 
+/**
+ * Extract data from PDF file path
+ * @param file file path
+ * @return {Promise<any>} data of PDF
+ */
 ExtractorHandler.prototype.extractHandler = function(file) {
   return new Promise((resolve, reject) =>
     pdfExtract.extract(process.cwd() + '/' + file, {}, (err, data) => {

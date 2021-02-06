@@ -365,4 +365,15 @@ ShootPositionsExtractor.prototype.extract = function (file, recap, slowMode) {
   });
 };
 
+ShootPositionsExtractor.prototype.isShootPositions = function(file) {
+  const handler = new ExtractorHandler();
+
+  return handler.extractHandler(file).then((data) =>  {
+    if(data.pages.length < 2) return false;
+
+    return data.pages.map((page) => page.content.map(content => content.str))
+      .every(contentPage => contentPage.indexOf("POSITIONS DE TIRS RÉUSSIS") > -1);
+  });
+};
+
 module.exports = ShootPositionsExtractor;

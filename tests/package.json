@@ -5,11 +5,13 @@
   "main": "extractor.js",
   "scripts": {
     "test": "node extractor.js",
-    "test-slow-mode": "node extractor.js --slow-mode"
+    "test-slow-mode": "node extractor.js --slow-mode",
+    "test-check": "node check-file.js"
   },
   "author": "Antoine Bouquet",
   "license": "ISC",
   "dependencies": {
+    "ng2-pdf-viewer": "^6.3.2",
     "stats-fr-emarque-basketball-extractor": "../"
   }
 }
