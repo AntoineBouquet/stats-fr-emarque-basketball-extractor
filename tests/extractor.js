@@ -22,5 +22,5 @@ let slowMode = process.argv[2] === '--slow-mode';
 
 Extractor.extractAll(matchSheet, recap, historySheet, shootPositionsSheet, slowMode).then((data) => {
   console.log(util.inspect(data.match, {maxArrayLength: null, colors: true}));
-});
+}).catch((err) => console.error(err));
 

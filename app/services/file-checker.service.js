@@ -14,7 +14,9 @@ FileChecker.prototype.checkFile = async function(file) {
   }
 
   try {
-    fs.existsSync(file);
+    if(!fs.existsSync(file)) {
+      return "File " + file + " does not exist";
+    }
   } catch {
     return "File " + file + " does not exist";
   }

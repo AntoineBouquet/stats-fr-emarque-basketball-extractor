@@ -66,7 +66,7 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
  */
 exports.extractMatchSheet = function(matchSheetFile) {
   return new Promise(async (resolve, reject) => {
-    let checkFile = await fileChecker.checkFile(matchSheetFile);
+    let checkFile = await fileChecker.checkFile(matchSheetFile).catch((err) => reject(err));
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -83,7 +83,7 @@ exports.extractMatchSheet = function(matchSheetFile) {
  */
 exports.extractRecap = function(recapFile) {
   return new Promise(async (resolve, reject) => {
-    let checkFile = await fileChecker.checkFile(recapFile);
+    let checkFile = await fileChecker.checkFile(recapFile).catch((err) => reject(err));
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -100,7 +100,7 @@ exports.extractRecap = function(recapFile) {
  */
 exports.extractHistory = function(historyFile) {
   return new Promise(async (resolve, reject) => {
-    let checkFile = await fileChecker.checkFile(historyFile);
+    let checkFile = await fileChecker.checkFile(historyFile).catch((err) => reject(err));
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -118,7 +118,7 @@ exports.extractHistory = function(historyFile) {
  */
 exports.extractShootPositions = function(shootPositionsFile, slowMode = false) {
   return new Promise(async (resolve, reject) => {
-    let checkFile = await fileChecker.checkFile(shootPositionsFile);
+    let checkFile = await fileChecker.checkFile(shootPositionsFile).catch((err) => reject(err));
 
     if(checkFile !== '')
       reject("Error checking file: \n\t" + checkFile);
@@ -134,7 +134,7 @@ exports.extractShootPositions = function(shootPositionsFile, slowMode = false) {
  * @returns {Promise<string>} MATCH_SHEET, RECAP, HISTORY, SHOOT_POSITIONS or null
  */
 exports.checkFile = async function(file) {
-  let checkFile = await fileChecker.checkFile(file);
+  let checkFile = await fileChecker.checkFile(file).catch((err) => 'erreur check file: ' + err);
 
   if(checkFile !== '') {
     return Promise.reject("File is not acceptable: " + checkFile);
