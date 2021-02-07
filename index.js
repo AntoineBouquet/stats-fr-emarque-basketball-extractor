@@ -26,9 +26,9 @@ const fileChecker = new FileChecker();
  */
 exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet = '', slowMode = false) {
   return new Promise(async (resolve, reject) => {
-    let filesChecking = [await fileChecker.checkFile(matchSheet),
-      await fileChecker.checkFile(recapSheet),
-      await fileChecker.checkFile(historySheet)];
+    let filesChecking = [await fileChecker.checkFile(matchSheet).catch(err => reject(err)),
+      await fileChecker.checkFile(recapSheet).catch(err => reject(err)),
+      await fileChecker.checkFile(historySheet).catch(err => reject(err))];
 
     if(filesChecking.join('') !== '') {
       reject("Error checking file: " + filesChecking.filter(check => check !== "").join('\n\t'));
@@ -45,7 +45,7 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
       promises.push(historyExtractor.extract(historySheet).then((mHistory) => history = mHistory));
 
       Promise.all(promises).then(async () => {
-        if(await fileChecker.checkFile(shootsSheet) === '') {
+        if(await fileChecker.checkFile(shootsSheet).catch(err => reject(err)) === '') {
           return shootPositionsExtractor.extract(shootsSheet, matchFromRecap, slowMode).then((mShoots) => teamShoots = mShoots);
         } else {
           return Promise.resolve();
