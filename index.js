@@ -25,10 +25,10 @@ const fileChecker = new FileChecker();
  * @returns {Promise<ExtractorData>} match data from files
  */
 exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet = '', slowMode = false) {
-  return new Promise((resolve, reject) => {
-    let filesChecking = [fileChecker.checkFile(matchSheet),
-      fileChecker.checkFile(recapSheet),
-      fileChecker.checkFile(historySheet)];
+  return new Promise(async (resolve, reject) => {
+    let filesChecking = [await fileChecker.checkFile(matchSheet),
+      await fileChecker.checkFile(recapSheet),
+      await fileChecker.checkFile(historySheet)];
 
     if(filesChecking.join('') !== '') {
       reject("Error checking file: " + filesChecking.filter(check => check !== "").join('\n\t'));
@@ -44,8 +44,8 @@ exports.extractAll = function(matchSheet, recapSheet, historySheet, shootsSheet 
       promises.push(matchSheetExtractor.extract(matchSheet).then((match) => matchFromMatchSheet = match));
       promises.push(historyExtractor.extract(historySheet).then((mHistory) => history = mHistory));
 
-      Promise.all(promises).then(() => {
-        if(fileChecker.checkFile(shootsSheet) === '') {
+      Promise.all(promises).then(async () => {
+        if(await fileChecker.checkFile(shootsSheet) === '') {
           return shootPositionsExtractor.extract(shootsSheet, matchFromRecap, slowMode).then((mShoots) => teamShoots = mShoots);
         } else {
           return Promise.resolve();
