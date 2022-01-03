@@ -21,7 +21,7 @@ module.exports = class TempFolder {
    * Clean tmp folder
    * @return {Promise<void>}
    */
-  cleanTmpFolder = () => {
+  cleanTmpFolder() {
     let tmpExist = fs.existsSync(this.folder);
     
     if (!tmpExist) {
