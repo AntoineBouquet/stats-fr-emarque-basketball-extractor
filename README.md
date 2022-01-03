@@ -14,11 +14,11 @@ This package use [pdf-image](https://www.npmjs.com/package/pdf-image) and [node-
 
 #### Ubuntu
 ```
-sudo apt-get install imagemagick ghostscript poppler-utils tesseract-ocr
+sudo apt-get install imagemagick ghostscript poppler-utils tesseract-ocr tesseract-ocr-fra
 ``` 
 #### OSX
 ```
-brew install imagemagick ghostscript xpdf tesseract
+brew install imagemagick ghostscript xpdf tesseract tesseract-lang
 ``` 
 
 ## How to use
