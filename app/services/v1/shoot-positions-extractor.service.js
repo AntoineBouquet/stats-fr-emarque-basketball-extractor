@@ -1,5 +1,6 @@
-const Utils = require('../utils/utils');
+const Utils = require('../../utils/utils');
 const ExtractorHandler = require('./extractor-handler.service');
+const TempFolder = require('../temp-folder.service');
 const PDFImage = require("pdf-image").PDFImage;
 const uuidv4 = require('uuid/v4');
 const fs = require('fs');
@@ -9,24 +10,25 @@ const pixelmatch = require('pixelmatch');
 const potrace = require('potrace');
 const AsyncLock = require('async-lock');
 
-const Player = require('../models/basketball/player.model');
-const Team = require('../models/basketball/team.model');
-const ShootPosition = require('../models/basketball/shoot-position.model');
-const ShootPositions = require('../models/basketball/shoot-positions.model');
+const Player = require('../../models/basketball/player.model');
+const Team = require('../../models/basketball/team.model');
+const ShootPosition = require('../../models/basketball/shoot-position.model');
+const ShootPositions = require('../../models/basketball/shoot-positions.model');
 const lock = new AsyncLock();
 
-const ShootZones = require('../models/basketball/shoot-zones.enum');
-
+const ShootZones = require('../../models/basketball/shoot-zones.enum');
 
 const utils = new Utils();
 
 function ShootPositionsExtractor() {
 }
 
-const extractShootPos = function (file, numPage, shootPositions, part, tmpFolder) {
+const extractShootPos = function (file, numPage, shootPositions, part) {
+  let tempFolderService = new TempFolder();
+  
   return new Promise((resolve, reject) => {
     let randomName = numPage + '-' + shootPositions.period + '-' + part + '-' + uuidv4();
-    let diffImagePath = tmpFolder + "/" + randomName + '-diff.png';
+    let diffImagePath = tempFolderService.tmpFolder + "/" + randomName + '-diff.png';
 
     let cropParts = [
       "103x87+267+242" /* Period 1 top */,
@@ -42,7 +44,7 @@ const extractShootPos = function (file, numPage, shootPositions, part, tmpFolder
     ];
 
     const pdfImage = new PDFImage(file, {
-      outputDirectory: tmpFolder,
+      outputDirectory: tempFolderService.tmpFolder,
       pdfFileBaseName: randomName,
       convertOptions: {
         "-crop": cropParts[(shootPositions.period + ((part - 1) * 5)) - 1]
@@ -50,7 +52,7 @@ const extractShootPos = function (file, numPage, shootPositions, part, tmpFolder
     });
 
     pdfImage.convertPage(numPage - 1).then(function (imagePath) {
-      const img1 = PNG.sync.read(fs.readFileSync(path.resolve(__dirname, '../resources/field-empty.png')));
+      const img1 = PNG.sync.read(fs.readFileSync(path.resolve(__dirname, '../resources/fields-empty/field-empty.png')));
       const img2 = PNG.sync.read(fs.readFileSync(imagePath));
       const {width, height} = img1;
       const diff = new PNG({width, height});
@@ -230,6 +232,8 @@ const addMissedPositions = (shootPositions, stats) => {
 }
 
 ShootPositionsExtractor.prototype.extract = function (file, recap, slowMode) {
+  let tempFolderService = new TempFolder();
+
   return new Promise((resolve, reject) => {
     let homeTeamPart = true;
     let first = true;
@@ -240,40 +244,15 @@ ShootPositionsExtractor.prototype.extract = function (file, recap, slowMode) {
 
     const handler = new ExtractorHandler();
 
-    let tmpFolder = './tmp-extractor';
-    let tmpExist = fs.existsSync(tmpFolder);
-
-    if (!tmpExist) {
-      fs.mkdirSync(tmpFolder);
-    }
-
-    let deleteTmpFiles = () => {
-      fs.readdir(tmpFolder, (err, files) => {
-        for (const file of files) {
-          try {
-            fs.unlinkSync(path.join(tmpFolder, file));
-          } catch {
-          }
-        }
-
-        try {
-          if (!tmpExist) {
-            fs.rmdirSync(tmpFolder);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-    };
 
     let rejectHandler = function (err) {
       console.error(err);
-      deleteTmpFiles();
+      tempFolderService.cleanTmpFolder();
       reject("An error occured extracting shoot positions : " + err);
     };
 
     let resolveHandler = function (data) {
-      deleteTmpFiles();
+      tempFolderService.cleanTmpFolder();
       resolve(data);
     };
 
@@ -310,14 +289,14 @@ ShootPositionsExtractor.prototype.extract = function (file, recap, slowMode) {
 
                   if (slowMode) {
                     promisesProcess.push(lock.acquire('shoot-position', function (done) {
-                      extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
+                      extractShootPos(file, pageNum, shootPositions, pagePart)
                         .then(() => {
                           player.shootPositions.push(shootPositions);
                           done();
                         });
                     }, {}));
                   } else {
-                    promisesProcess.push(extractShootPos(file, pageNum, shootPositions, pagePart, tmpFolder)
+                    promisesProcess.push(extractShootPos(file, pageNum, shootPositions, pagePart)
                       .then(() => player.shootPositions.push(shootPositions)));
                   }
                 });

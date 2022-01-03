@@ -1,5 +1,5 @@
-const fs = require('fs');
-const ExtractorHandler = require('./extractor-handler.service');
+const fs = require("fs");
+const ExtractorHandler = require("./v1/extractor-handler.service");
 
 function FileChecker() {}
 
@@ -8,30 +8,33 @@ function FileChecker() {}
  * @param file : string - the file to check
  * @return string - empty if file is OK, an error message otherwise
  */
-FileChecker.prototype.checkFile = async function(file) {
-  if(file === null || file === "") {
-    return "File " + file + " is null or empty";
+FileChecker.prototype.checkFile = async function (file) {
+  if (file === null || file === "") {
+    return { err: "File " + file + " is null or empty" };
   }
 
   try {
-    if(!fs.existsSync(file)) {
-      return "File " + file + " does not exist";
+    if (!fs.existsSync(file)) {
+      return { err: "File " + file + " does not exist" };
     }
   } catch {
-    return "File " + file + " does not exist";
+    return { err: "File " + file + " does not exist" };
   }
 
   const handler = new ExtractorHandler();
   let data = await handler.extractHandler(file);
 
-  if(data == null || data.meta == null || data.meta.info == null || data.pages == null)
-    return "File " + file + " is not parsable";
-
-  if(data.meta.info.Producer.indexOf("iTextSharp") === -1) {
-    return "File " + file + " is not create with c# producer";
+  if (data == null || data.meta == null || data.meta.info == null || data.pages == null) {
+    return { err: "File " + file + " is not parsable" };
   }
 
-  return "";
+  if (data.meta.info.Producer.indexOf("iTextSharp") === -1 && !data.meta.info.Producer.includes("Qt")) {
+    return { err: "File " + file + " is not create with c# producer" };
+  } else if (data.meta.info.Producer.indexOf("iTextSharp") !== -1) {
+    return { version: 1 };
+  } else if (data.meta.info.Producer.includes("Qt")) {
+    return { version: 2 };
+  }
 };
 
 module.exports = FileChecker;

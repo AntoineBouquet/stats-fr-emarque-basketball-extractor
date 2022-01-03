@@ -1,9 +1,9 @@
-const Match = require('../models/basketball/match.model.js');
-const Team = require('../models/basketball/team.model.js');
-const Player = require('../models/basketball/player.model.js');
-const Stats = require('../models/basketball/stats.model.js');
-const Utils = require('../utils/utils');
-const Person = require('../models/basketball/person.model.js');
+const Match = require('../../models/basketball/match.model.js');
+const Team = require('../../models/basketball/team.model.js');
+const Player = require('../../models/basketball/player.model.js');
+const Stats = require('../../models/basketball/stats.model.js');
+const Utils = require('../../utils/utils');
+const Person = require('../../models/basketball/person.model.js');
 const ExtractorHandler = require('./extractor-handler.service');
 
 const utils = new Utils();
@@ -33,13 +33,13 @@ const extractPlayers = function(contents) {
 const extractStats = function(keyY, contents) {
   let stats = new Stats();
 
-  stats.points = utils.extractDataFromXY(332, Math.floor(keyY), contents);
-  stats.fieldGoalsMade = utils.extractDataFromXY(365, Math.floor(keyY), contents);
-  stats.threePointsMade = utils.extractDataFromXY(400, Math.floor(keyY), contents);
-  stats.twoPointsExtMade = utils.extractDataFromXY(428, Math.floor(keyY), contents);
-  stats.twoPointsIntMade = utils.extractDataFromXY(460, Math.floor(keyY), contents);
-  stats.freeThrowMade = utils.extractDataFromXY(491, Math.floor(keyY), contents);
-  stats.totalFouls = utils.extractDataFromXY(522, Math.floor(keyY), contents);
+  stats.points = parseInt(utils.extractDataFromXY(332, Math.floor(keyY), contents));
+  stats.fieldGoalsMade = parseInt(utils.extractDataFromXY(365, Math.floor(keyY), contents));
+  stats.threePointsMade = parseInt(utils.extractDataFromXY(400, Math.floor(keyY), contents));
+  stats.twoPointsExtMade = parseInt(utils.extractDataFromXY(428, Math.floor(keyY), contents));
+  stats.twoPointsIntMade = parseInt(utils.extractDataFromXY(460, Math.floor(keyY), contents));
+  stats.freeThrowMade = parseInt(utils.extractDataFromXY(491, Math.floor(keyY), contents));
+  stats.totalFouls = parseInt(utils.extractDataFromXY(522, Math.floor(keyY), contents));
 
   return stats;
 };
@@ -66,8 +66,8 @@ RecapExtractor.prototype.extract = function(file) {
             teamHome.name = utils.extractDataFromXY(48, 168, contentPage1);
             teamAway.name = utils.extractDataFromXY(48, 484, contentPage1);
 
-            teamHome.scores.scoreTotal = utils.extractDataFromXY(530, 49, contentPage1);
-            teamAway.scores.scoreTotal = utils.extractDataFromXY(530, 65, contentPage1);
+            teamHome.scores.scoreTotal = parseInt(utils.extractDataFromXY(530, 49, contentPage1));
+            teamAway.scores.scoreTotal = parseInt(utils.extractDataFromXY(530, 65, contentPage1));
 
             teamHome.statsTotal = extractStats(369, contentPage1);
             teamHome.statsStartingLineup = extractStats(383, contentPage1);
@@ -88,9 +88,9 @@ RecapExtractor.prototype.extract = function(file) {
             teamAway.players.push(...extractPlayers(contentPage1.filter(content => content.x > 0 && content.y >= 523 && content.y <= 686)));
 
             teamHome.headCoach.lastnameFirstnameReduced = utils.extractDataFromXY(265, 451, contentPage1);
-            teamHome.headCoach.totalFouls = utils.extractDataFromXY(527, 451, contentPage1);
+            teamHome.headCoach.totalFouls = parseInt(utils.extractDataFromXY(527, 451, contentPage1));
             teamAway.headCoach.lastnameFirstnameReduced = utils.extractDataFromXY(265, 767, contentPage1);
-            teamAway.headCoach.totalFouls = utils.extractDataFromXY(527, 767, contentPage1);
+            teamAway.headCoach.totalFouls = parseInt(utils.extractDataFromXY(527, 767, contentPage1));
 
             match.teams.push(teamHome);
             match.teams.push(teamAway);

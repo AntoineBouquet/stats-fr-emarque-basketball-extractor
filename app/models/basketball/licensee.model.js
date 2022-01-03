@@ -16,6 +16,20 @@ class Licensee extends Person {
     this.fouls.technicalCoach = licenseeContent.filter(content => content.str === "C").length;
     this.fouls.technicalBench = licenseeContent.filter(content => content.str === "B").length;
   }
+
+  isValid() {
+    let personValid = super.isValid();
+
+    if(typeof personValid !== "boolean") {
+      return personValid;
+    } else if (this.licence == null || typeof this.licence != "string") {
+      return "Licensee is not valid (licence)";
+    } else if(this.fouls == null) {
+      return "Licensee is not valid (fouls)";
+    }
+
+    return this.fouls.isValid();
+  }
 }
 
 module.exports = Licensee;

@@ -1,26 +1,33 @@
-const recap = 'matchs/1/recapitulatif-2019-12-15-reg-rmve-3-as-marcoussis-cs-de-noisy-le.pdf';
-// const recap = 'matchs/2/recapitulatif-2019-12-08-reg-rmve-3-cs-de-noisy-leus-melun.pdf';
-//const recap = 'matchs/3/recapitulatif-2018-02-04-reg-smpr-en-emeraudeba-rennes-tour-d-a.pdf';
+const assert = require("assert");
+const Extractor = require("../index.js");
 
-const matchSheet = 'matchs/1/feuille-de-marque-2019-12-15-reg-rmve-3-as-marcoussis-cs-de-noisy-le.pdf';
-//const matchSheet = 'matchs/2/feuille-de-marque-2019-12-08-reg-rmve-3-cs-de-noisy-leus-melun.pdf';
-//const matchSheet = 'matchs/3/feuille-de-marque-2018-02-04-reg-smpr-en-emeraudeba-rennes-tour-d-a.pdf';
+const testV1 = async () => {
+  const recapSheet = "tests/matchs/1/recap.pdf";
+  const matchSheet = "tests/matchs/1/match-sheet.pdf";
+  const historySheet = "tests/matchs/1/history.pdf";
+  const shootPosSheet = "tests/matchs/1/shoot-positions.pdf";
 
-const historySheet = 'matchs/1/historique-2019-12-15-reg-rmve-3-as-marcoussis-cs-de-noisy-le.pdf';
-//const historySheet = 'matchs/2/historique-2019-12-08-reg-rmve-3-cs-de-noisy-leus-melun.pdf';
-//const historySheet = 'matchs/3/historique-2018-02-04-reg-smpr-en-emeraudeba-rennes-tour-d-a.pdf';
+  const data = await Extractor.extractAll(matchSheet, recapSheet, shootPosSheet, historySheet);
 
+  assert(data != null, "Data test V1 returns null");
+  const dataValid = data.isValid();
+  assert(dataValid === true, "Data test V1 is not valid: " + dataValid)
+};
 
-const shootPositionsSheet = 'matchs/1/pos-tirs-reussis-2019-12-15-reg-rmve-3-as-marcoussis-cs-de-noisy-le.pdf';
-//const shootPositionsSheet = 'matchs/2/pos-tirs-reussis-2019-12-08-reg-rmve-3-cs-de-noisy-leus-melun.pdf';
-//const shootPositionsSheet = 'matchs/3/pos-tirs-reussis-2018-02-04-reg-smpr-en-emeraudeba-rennes-tour-d-a.pdf';
+const testV2 = async () => {
+  const recapSheet = "tests/matchs/2/recap.pdf";
+  const matchSheet = "tests/matchs/2/match-sheet.pdf";
+  const shootPosSheet = "tests/matchs/2/shoot-positions.pdf";
 
-const util = require('util');
-const Extractor = require('stats-fr-emarque-basketball-extractor');
+  const data = await Extractor.extractAll(matchSheet, recapSheet, shootPosSheet);
+  assert(data != null, "Data test V2 returns null");
+  const dataValid = data.isValid();
+  assert(dataValid === true, "Data test V2 is not valid: " + dataValid)
+};
 
-let slowMode = process.argv[2] === '--slow-mode';
+const tests = async () => {
+  await testV1();
+  await testV2();
+}
 
-Extractor.extractAll(matchSheet, recap, historySheet, shootPositionsSheet, slowMode).then((data) => {
-  console.log(util.inspect(data.match, {maxArrayLength: null, colors: true}));
-}).catch((err) => console.error(err));
-
+tests();

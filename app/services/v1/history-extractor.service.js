@@ -1,6 +1,6 @@
 const ExtractorHandler = require('./extractor-handler.service');
-const EventType = require('../models/basketball/event-types.enum');
-const Event = require('../models/basketball/event.model');
+const EventType = require('../../models/basketball/event-types.enum');
+const Event = require('../../models/basketball/event.model');
 
 function HistoryExtractor() {}
 
@@ -100,7 +100,7 @@ HistoryExtractor.prototype.extract = function(file) {
                   }
 
                   currentEvent = new Event();
-                  currentEvent.order = content.str;
+                  currentEvent.order = parseInt(content.str);
                 } else if(content.x < 120) {
                   currentEvent.period = content.str;
                 } else if(content.x < 160) {

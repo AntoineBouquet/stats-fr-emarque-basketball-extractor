@@ -1,5 +1,5 @@
-const ExtractorData = require('../models/extractor-data.model');
-const Match = require('../models/basketball/match.model');
+const ExtractorData = require('../../models/extractor-data.model');
+const Match = require('../../models/basketball/match.model');
 
 function MergeExtractorService() {}
 
@@ -43,7 +43,7 @@ const extractFirstnameLastname = function(person) {
  */
 MergeExtractorService.prototype.merge = function(matchFromMatchSheet, matchFromRecap, history, teamShoots) {
   let match = matchFromMatchSheet;
-  match.history = history != null ? history : [];
+  match.history = history;
 
   let resultCheck = checkFieldEquals(matchFromMatchSheet.number, matchFromRecap.number, "match.number") &&
     checkFieldEquals(matchFromMatchSheet.city, matchFromRecap.city, "match.city") &&
@@ -51,11 +51,14 @@ MergeExtractorService.prototype.merge = function(matchFromMatchSheet, matchFromR
     checkFieldEquals(matchFromMatchSheet.hourBegin, matchFromRecap.hourBegin, "match.hourBegin") &&
     checkFieldsNotNull(match.hourEnd);
 
+  const util = require('util');
+  //console.log(util.inspect(match, false, null, true));
+
   if(! resultCheck) {
     data.result.code = 1;
   } else {
     matchFromRecap.teams.forEach(team => {
-      let currentTeam = match.teams.find(fTeam => fTeam.home === team.home);
+      let currentTeam = match.teams.find(fTeam => fTeam.name === team.name);
 
       currentTeam.statsTotal = team.statsTotal;
       currentTeam.statsStartingLineup = team.statsStartingLineup;
@@ -68,7 +71,7 @@ MergeExtractorService.prototype.merge = function(matchFromMatchSheet, matchFromR
       currentTeam.statsOvertime = team.statsOvertime;
 
       team.players.forEach(player => {
-        let currentPlayer = currentTeam.players.find(fPlayer => fPlayer.shirtNumber == player.shirtNumber);
+        let currentPlayer = currentTeam.players.find(fPlayer => fPlayer.shirtNumber === player.shirtNumber);
         currentPlayer.lastnameFirstname = player.lastnameFirstname;
 
         extractFirstnameLastname(currentPlayer);

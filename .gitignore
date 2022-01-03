@@ -110,3 +110,5 @@ package-lock.json
 tmp-extractor/
 
 .DS_Store
+
+.vscode

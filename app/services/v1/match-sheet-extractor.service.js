@@ -1,11 +1,11 @@
-const Match = require('../models/basketball/match.model.js');
-const Person = require('../models/basketball/person.model.js');
-const Player = require('../models/basketball/player.model.js');
-const Team = require('../models/basketball/team.model.js');
-const Coach = require('../models/basketball/coach.model.js');
-const Event = require('../models/basketball/event.model.js');
-const EventTypes = require('../models/basketball/event-types.enum');
-const Utils = require('../utils/utils');
+const Match = require('../../models/basketball/match.model.js');
+const Person = require('../../models/basketball/person.model.js');
+const Player = require('../../models/basketball/player.model.js');
+const Team = require('../../models/basketball/team.model.js');
+const Coach = require('../../models/basketball/coach.model.js');
+const Event = require('../../models/basketball/event.model.js');
+const EventTypes = require('../../models/basketball/event-types.enum');
+const Utils = require('../../utils/utils');
 const ExtractorHandler = require('./extractor-handler.service');
 
 const utils = new Utils();
@@ -186,8 +186,8 @@ SheetExtractor.prototype.extract = function(file) {
         teamHome.shirtColor = utils.extractDataFromXY(259, 135, content);
         teamAway.shirtColor = utils.extractDataFromXY(259, 422, content);
 
-        teamHome.scores.scoreTotal = utils.extractDataFromXY(372, 715, content);
-        teamAway.scores.scoreTotal = utils.extractDataFromXY(512, 715, content);
+        teamHome.scores.scoreTotal = parseInt(utils.extractDataFromXY(372, 715, content));
+        teamAway.scores.scoreTotal = parseInt(utils.extractDataFromXY(512, 715, content));
 
         teamHome.name = utils.extractDataFromXY(79, 121, content);
         teamAway.name = utils.extractDataFromXY(79, 409, content);
@@ -216,21 +216,21 @@ SheetExtractor.prototype.extract = function(file) {
           content.filter(content => Math.floor(content.y) === 676 && content.x < 345 && content.x > 160
             && ! content.str.includes("Entr")), 676, 676, true);
 
-        teamHome.scores.scoreFirstQuarter = utils.extractDataFromXY(110, 709, content);
-        teamAway.scores.scoreFirstQuarter = utils.extractDataFromXY(150, 709, content);
-        teamHome.scores.scoreSecondQuarter = utils.extractDataFromXY(210, 709, content);
-        teamAway.scores.scoreSecondQuarter = utils.extractDataFromXY(250, 709, content);
+        teamHome.scores.scoreFirstQuarter = parseInt(utils.extractDataFromXY(110, 709, content));
+        teamAway.scores.scoreFirstQuarter = parseInt(utils.extractDataFromXY(150, 709, content));
+        teamHome.scores.scoreSecondQuarter = parseInt(utils.extractDataFromXY(210, 709, content));
+        teamAway.scores.scoreSecondQuarter = parseInt(utils.extractDataFromXY(250, 709, content));
 
-        teamHome.scores.scoreThirdQuarter = utils.extractDataFromXY(110, 724.48, content);
-        teamAway.scores.scoreThirdQuarter = utils.extractDataFromXY(150, 724.48, content);
-        teamHome.scores.scoreFourthQuarter = utils.extractDataFromXY(210, 724.48, content);
-        teamAway.scores.scoreFourthQuarter = utils.extractDataFromXY(250, 724.48, content);
+        teamHome.scores.scoreThirdQuarter = parseInt(utils.extractDataFromXY(110, 724.48, content));
+        teamAway.scores.scoreThirdQuarter = parseInt(utils.extractDataFromXY(150, 724.48, content));
+        teamHome.scores.scoreFourthQuarter = parseInt(utils.extractDataFromXY(210, 724.48, content));
+        teamAway.scores.scoreFourthQuarter = parseInt(utils.extractDataFromXY(250, 724.48, content));
 
         let contentOvertime = content.filter(content => content.y <= 740 && content.y >= 738);
-        teamHome.scores.scoreOvertime = utils.extractDataFromXY(120, 739,
-          contentOvertime.filter(content => content.x > 100 && content.x < 170));
-        teamAway.scores.scoreOvertime = utils.extractDataFromXY(250, 724,
-          contentOvertime.filter(content => content.x > 190 && content.x < 250));
+        teamHome.scores.scoreOvertime = parseInt(utils.extractDataFromXY(120, 739,
+          contentOvertime.filter(content => content.x > 100 && content.x < 170)));
+        teamAway.scores.scoreOvertime = parseInt(utils.extractDataFromXY(250, 724,
+          contentOvertime.filter(content => content.x > 190 && content.x < 250)));
 
         let contentCurrentScore = content.filter(content => content.x >= 360 && content.x <= 560 &&
           content.y >= 150 && content.y <= 675);

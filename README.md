@@ -1,37 +1,36 @@
 # :basketball: French Stats Basketball Extractor 
 [![NPM version](https://img.shields.io/npm/v/stats-fr-emarque-basketball-extractor.svg?style=flat)](https://www.npmjs.com/package/stats-fr-emarque-basketball-extractor) [![NPM total downloads](https://img.shields.io/npm/dt/stats-fr-emarque-basketball-extractor.svg?style=flat)](https://npmjs.org/package/stats-fr-emarque-basketball-extractor)
+[![travis-ci](https://travis-ci.org/AntoineBouquet/stats-fr-emarque-basketball-extractor.svg)](https://travis-ci.org/AntoineBouquet/stats-fr-emarque-basketball-extractor)
 
 A tool to  extract french basketball amateur matches stats from E-Marque (French Basketball Federation software)
 
-## Getting Started
-
-### Installation
+## Installation
 
 ```
 npm install stats-fr-emarque-basketball-extractor
 ```
 
-This package use [pdf-image](https://www.npmjs.com/package/pdf-image) package, which need `convert`, `gs` and `pdfinfo` (part of poppler) commands.
+This package use [pdf-image](https://www.npmjs.com/package/pdf-image) and [node-ts-ocr](https://www.npmjs.com/package/node-ts-ocr) packages, which need `convert`, `gs`, `pdfinfo`, `pdftotext` and `tesseract` commands.
 
 #### Ubuntu
 ```
-sudo apt-get install imagemagick ghostscript poppler-utils
+sudo apt-get install imagemagick ghostscript poppler-utils tesseract-ocr
 ``` 
-#### OSX (Yosemite)
+#### OSX
 ```
-brew install imagemagick ghostscript poppler 
+brew install imagemagick ghostscript xpdf tesseract
 ``` 
 
-### How to use
+## How to use
 
 ```
 Extractor = require('stats-fr-emarque-basketball-extractor');
 ```
 
-#### Get all stats from match PDF files
+### Get all stats from match PDF files
 
 ```
-Extractor.extractAll(matchFile, recapFile, historyFile, shootPositionsFile, slowMode).then((result) => {
+Extractor.extractAll(matchFile, recapFile, shootPositionsFile, historyFile).then((result) => {
   // TODO something with result object
 });
 ```
@@ -39,12 +38,10 @@ Extractor.extractAll(matchFile, recapFile, historyFile, shootPositionsFile, slow
 French E-Marque software provide four PDF files which could be used :
 - `matchFile` is the match sheet file path (:fr: Feuille de marque)
 - `recapFile` is the summary sheet file path (:fr: Récapitulatif)
-- `historyFile` is the history sheet file path (:fr: Historique)
-- `shootPositionsFile` extract approximate shoot positions sheet file path (:fr: Positions de tir)
+- `shootPositionsFile` (optional) extract approximate shoot positions sheet file path (:fr: Positions de tir)
+- `historyFile` (optional) is the history sheet file path (:fr: Historique)
 
-`slowMode` is an optional boolean param. If set to true, all periods of all players will be process one by one (good for low capacity computers).
-
-#### Get stats from match sheet
+### Get stats from match sheet
 
 ```
 Extractor.extractMatchSheet(matchFile).then((match) => {
@@ -52,7 +49,7 @@ Extractor.extractMatchSheet(matchFile).then((match) => {
 });
 ```
 
-#### Get stats from summary sheet
+### Get stats from summary sheet
 
 ```
 Extractor.extractRecap(recapFile).then((match) => {
@@ -60,7 +57,7 @@ Extractor.extractRecap(recapFile).then((match) => {
 });
 ```
 
-#### Get stats from history sheet
+### Get stats from history sheet
 
 ```
 Extractor.extractHistory(historyFile).then((history) => {
@@ -68,7 +65,7 @@ Extractor.extractHistory(historyFile).then((history) => {
 });
 ```
 
-#### Get stats from shoot positions sheet
+### Get stats from shoot positions sheet
 
 ```
 Extractor.extractMatchSheet(shootPositionsFile, slowMode).then((positions) => {
@@ -76,7 +73,7 @@ Extractor.extractMatchSheet(shootPositionsFile, slowMode).then((positions) => {
 });
 ```
 
-#### Get file type
+### Get file type
 
 ```
 Extractor.checkFile(file).then((result) => {
@@ -86,31 +83,15 @@ Extractor.checkFile(file).then((result) => {
 
 A temp directory (called `tmp-extractor`) is created and deleted during this method to process images of shoot positions.
 
-`slowMode` is an optional boolean param. If set to true, all periods of all players will be process one by one (better for low capacity computers). 
-
 ## Tests
 
 ``` 
 git clone https://github.com/AntoineBouquet/stats-fr-emarque-basketball-extractor.git
-cd stats-fr-emarque-basketball-extractor/tests
-```
 
-Set `tests/extractor.js` file to use one matches's sheets and launch
-
-```
 npm run test
 ```
 
-Matches are in directory `tests/matchs/X`
-
-
-
-## TODO for v1.0.0
-
-- [X] Extract data from shoot positions sheet and implements `ShootPositionsExtractor` service
-- [X] `extractAll`: Merge data from all extractions 
-- [X] add a file check API method to check the truthfulness and the type of the file
-- [ ] add checks in `mergeExtractor.merge` method to prevent for data inconsistency between files
+You can put your own match files in `tests/matchs/1` and/or and `tests/matchs/2` with determined names (e.g `match-sheet.pdf`, `recap.pdf`, `history.pdf`, `shoot-positions.pdf`)
 
 ## License
 
