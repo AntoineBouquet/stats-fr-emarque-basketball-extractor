@@ -85,9 +85,7 @@ ExtractorHandler.prototype.extractHandler = async function (
     await tempFolderService.cleanTmpFolder();
   }
 
-  if(options.enableReplaceFailedChars) {
-    result = replaceFailedChars(result);
-  }
+  result = replaceFailedChars(result);
 
   return result.split('\n').filter(line => line.trim() != '');
 };
