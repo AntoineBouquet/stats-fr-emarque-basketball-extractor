@@ -30,7 +30,7 @@ ExtractorHandler.prototype.extractHandler = async function (
 
   let density = 300;
 
-  if(options.densityRatio != null && options.densityRatio != 1) {
+  if(options.densityRatio != null && options.densityRatio !== 1) {
     density = density * options.densityRatio;
     let zone1 = zone.split("+");
     let zone2 = zone1[0].split("x");
@@ -87,7 +87,7 @@ ExtractorHandler.prototype.extractHandler = async function (
 
   result = replaceFailedChars(result);
 
-  return result.split('\n').filter(line => line.trim() != '');
+  return result.split('\n').filter(line => line.trim() !== '');
 };
 
 /**
@@ -114,11 +114,12 @@ const replaceFailedChars = (value) => {
   if (value == null) return null;
 
   return value
-    .replace(/[\(\[]e[\)\]]/g, "0")
+    .replace(/[(\[]e[)\]]/g, "0")
     .replace(/ [oO] /g, " 0 ")
     .replace(/ O0 /g, " 0 ")
     .replace(/O00/g, "000")
-    .replace(/O0/g, "0");
+    .replace(/O0/g, "0")
+    .replace(/ n /g, " 11 ");
 };
 
 module.exports = ExtractorHandler;

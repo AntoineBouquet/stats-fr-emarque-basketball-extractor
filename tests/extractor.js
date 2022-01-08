@@ -30,4 +30,13 @@ const tests = async () => {
   await testV2();
 }
 
-tests();
+//tests();
+
+const otherTest = async () => {
+  const matchSheet = "tests/matchs/2/match-sheet.pdf";
+  const data = await Extractor.extractMatchSheet(matchSheet);
+
+  console.log(data);
+}
+
+otherTest();

@@ -17,6 +17,15 @@ class Licensee extends Person {
     this.fouls.technicalBench = licenseeContent.filter(content => content.str === "B").length;
   }
 
+  extractFoulsFromStr(licenseeContent) {
+    this.fouls.standard = (licenseeContent.match(new RegExp("P", "g")) || []).length;
+    this.fouls.technical = (licenseeContent.match(new RegExp("T", "g")) || []).length;
+    this.fouls.unsporting = (licenseeContent.match(new RegExp("U", "g")) || []).length;
+    this.fouls.disqualified = (licenseeContent.match(new RegExp("D", "g")) || []).length;
+    this.fouls.technicalCoach = (licenseeContent.match(new RegExp("C", "g")) || []).length;
+    this.fouls.technicalBench = (licenseeContent.match(new RegExp("B", "g")) || []).length;
+  }
+
   isValid() {
     let personValid = super.isValid();
 

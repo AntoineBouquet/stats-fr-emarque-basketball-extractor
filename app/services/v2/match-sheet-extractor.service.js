@@ -3,25 +3,24 @@ const Person = require("../../models/basketball/person.model.js");
 const Player = require("../../models/basketball/player.model.js");
 const Team = require("../../models/basketball/team.model.js");
 const Coach = require("../../models/basketball/coach.model.js");
-const Event = require("../../models/basketball/event.model.js");
-const EventTypes = require("../../models/basketball/event-types.enum");
 const Utils = require("../../utils/utils");
 const ExtractorHandler = require("./extractor-handler.service");
 
-const utils = new Utils();
-
-function SheetExtractor() {}
+function SheetExtractor() {
+}
 
 const extractPlayers = function (contents) {
   let players = [];
 
   contents.forEach((content) => {
+    if (content == null || content.length < 5) return;
+
     let player = new Player();
     const playerLicence1stPart = content.match(/^ *([A-Z]{2})/)[1];
     const playerLicence2ndPart = content.match(/^ *[A-Z]{2}([A-Z0-9]{6})/)[1].replace("O", "0");
     player.licence = playerLicence1stPart + playerLicence2ndPart;
     player.lastnameFirstnameReduced = content
-      .match(/^ *[A-Z]{2}[A-Z0-9]{6} *([^-\s]+ *[A-Z][\.\,][\.\,]?) */)[1]
+      .match(/^ *[A-Z]{2}[A-Z0-9]{6} *([^-\s]+ *[A-Z][.,][.,]?) */)[1]
       .replace(",", "");
 
     if (player.lastnameFirstnameReduced.indexOf(" ") === -1) {
@@ -34,7 +33,8 @@ const extractPlayers = function (contents) {
     }
 
     player.captain = content.indexOf("(CAP)") !== -1;
-    player.shirtNumber = content.trim().match(/([1-9][0-9]?)$/)[1];
+    player.shirtNumber = content.trim().match(/^[A-Z]{2}[A-Z0-9]{6} *[^-\s]+ *[A-Z][.,][.,]? *(?:\(CAP\) )?([1-9][0-9]?).*$/)[1];
+    player.extractFoulsFromStr(content.trim().match(/^[A-Z]{2}[A-Z0-9]{6} *[^-\s]+ *[A-Z][.,][.,]? *(?:\(CAP\) )?[1-9][0-9]?(.*)$/)[1]);
 
     players.push(player);
   });
@@ -42,16 +42,20 @@ const extractPlayers = function (contents) {
   return players;
 };
 
-const extractCoach = function (content) {
+const extractCoach = function (content, assistant = false) {
   let coach = new Coach();
+
+  if(assistant && ! content.includes('Entraineur adjoint')) return null;
 
   const licence1stPart = content.match(/^ *([A-Z]{2})/)[1];
   const licence2ndPart = content.match(/^ *[A-Z]{2}([A-Z0-9]{6})/)[1].replace("O", "0");
   coach.licence = licence1stPart + licence2ndPart;
 
   coach.lastnameFirstnameReduced = content
-    .match(/^.*Entraineur( adjoint)? +: +([^-\s]+ *[A-Z][\.\,][\.\,]?).*$/)[2]
+    .match(/^.*Entraineur( adjoint)? +: +([^-\s]+ *[A-Z][.,][.,]?).*$/)[2]
     .replace(",", "");
+
+  coach.extractFoulsFromStr(content.match(/^.*Entraineur(?: adjoint)? +: +[^-\s]+ *[A-Z][.,][.,]? *(?:\(CAP\) )?(.*)$/)[1]);
 
   return coach;
 };
@@ -101,7 +105,7 @@ SheetExtractor.prototype.extract = async function (file) {
 
   let offsetLineTeamHome = 0;
   let data = await handler.extractHandler(file, "180x45+90+425", 1);
-  if (data[0] != "Équipe A" && data[0] != "Équipe À") offsetLineTeamHome += 40;
+  if (data[0] !== "Équipe A" && data[0] !== "Équipe À") offsetLineTeamHome += 40;
 
   homeTeam.name = (
     await handler.extractHandler(file, "1200x" + (45 + offsetLineTeamHome).toString() + "+250+425", 1)
@@ -123,16 +127,16 @@ SheetExtractor.prototype.extract = async function (file) {
   )[0];
 
   homeTeam.players = extractPlayers(
-    await handler.extractHandler(file, "920x700+200+" + (860 + offsetLineTeamHome).toString(), 1, { removeLines: true })
+    await handler.extractHandler(file, "1300x700+200+" + (860 + offsetLineTeamHome).toString(), 1, {removeLines: true})
   );
 
-  let contentCoaches = await handler.extractHandler(file, "1000x100+130+" + (1560 + offsetLineTeamHome).toString(), 1);
+  let contentCoaches = await handler.extractHandler(file, "1350x100+130+" + (1560 + offsetLineTeamHome).toString(), 1, {removeLines: true});
   homeTeam.headCoach = extractCoach(contentCoaches[0]);
-  if (contentCoaches.length > 1) homeTeam.assistantCoach = extractCoach(contentCoaches[1]);
+  if (contentCoaches.length > 1) homeTeam.assistantCoach = extractCoach(contentCoaches[1], true);
 
   let offsetLineTeamAway = 0;
   data = await handler.extractHandler(file, "180x45+90+1730", 1);
-  if (data[0] != "Équipe B") offsetLineTeamAway += 40;
+  if (data[0] !== "Équipe B") offsetLineTeamAway += 40;
 
   awayTeam.name = (
     await handler.extractHandler(
@@ -158,19 +162,19 @@ SheetExtractor.prototype.extract = async function (file) {
   awayTeam.players = extractPlayers(
     await handler.extractHandler(
       file,
-      "920x700+200+" + (2135 + offsetLineTeamHome + offsetLineTeamAway).toString(),
+      "1300x700+200+" + (2135 + offsetLineTeamHome + offsetLineTeamAway).toString(),
       1,
-      { removeLines: true }
+      {removeLines: true}
     )
   );
 
   contentCoaches = await handler.extractHandler(
     file,
-    "1000x100+130+" + (2835 + offsetLineTeamHome + offsetLineTeamAway).toString(),
-    1
+    "1350x100+130+" + (2835 + offsetLineTeamHome + offsetLineTeamAway).toString(),
+    1, {removeLines: true}
   );
   awayTeam.headCoach = extractCoach(contentCoaches[0]);
-  if (contentCoaches.length > 1) awayTeam.assistantCoach = extractCoach(contentCoaches[1]);
+  if (contentCoaches.length > 1) awayTeam.assistantCoach = extractCoach(contentCoaches[1], true);
 
   homeTeam.scores.scoreTotal = parseInt((await handler.extractHandler(file, "100x40+1590+3050", 1))[0]);
   homeTeam.scores.scoreFirstQuarter = parseInt((await handler.extractHandler(file, "100x40+245+3050", 1))[0]);
@@ -197,12 +201,12 @@ SheetExtractor.prototype.isMatchSheet = async function (file) {
   const handler = new ExtractorHandler();
 
   let data1 = await handler.extractHandler(file, "600x80+1650+420", 1);
-  if(data1 == null || data1.length == 0 || data1[0] != 'MARQUE COURANTE') {
+  if (data1 == null || data1.length == 0 || data1[0] != 'MARQUE COURANTE') {
     return false;
   }
 
   let data2 = await handler.extractHandler(file, "630x80+50+30", 2);
-  if(data2 == null || data2.length == 0 || data2[0] != 'RÉSERVES/OBSERVATIONS') {
+  if (data2 == null || data2.length == 0 || data2[0] != 'RÉSERVES/OBSERVATIONS') {
     return false;
   }
 

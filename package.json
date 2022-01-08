@@ -1,12 +1,13 @@
 {
   "name": "stats-fr-emarque-basketball-extractor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A tool to extract french basketball amateur matches stats from E-Marque (FFBB software)",
   "main": "index.js",
   "scripts": {
     "test": "node $NODE_DEBUG_OPTION ./tests/check-file.js && node $NODE_DEBUG_OPTION ./tests/extractor.js",
     "test:slow": "node $NODE_DEBUG_OPTION --max-old-space-size=150 ./tests/check-file.js && node $NODE_DEBUG_OPTION --max-old-space-size=150 ./tests/extractor.js",
-    "check-file": "node $NODE_DEBUG_OPTION ./tests/check-file.js"
+    "check-file": "node $NODE_DEBUG_OPTION ./tests/check-file.js",
+    "extract-data": "node $NODE_DEBUG_OPTION ./tests/extract-data.js"
   },
   "author": "Antoine Bouquet",
   "license": "Apache-2.0",
